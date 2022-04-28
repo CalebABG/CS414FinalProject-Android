@@ -22,11 +22,11 @@ object Utilities {
         return x.toInt() and 0xff
     }
 
-    fun intToBytes(myInteger: Int): ByteArray {
+    fun Int.toByteArray(): ByteArray {
         return ByteBuffer
-            .allocate(4)
+            .allocate(Int.SIZE_BYTES)
             .order(ByteOrder.LITTLE_ENDIAN)
-            .putInt(myInteger)
+            .putInt(this)
             .array()
     }
 
