@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">CS414FinalProjectAndroid</string>
+    <string name="main_greeting_1">Start Your Engines!</string>
+    <string name="main_info_1">Welcome to the RC Car Control App</string>
+    <string name="tap_to_continue">Tap to Continue</string>
+    <string name="raw_sensor_unit">0.00 m/s\u00B2</string>
+</resources>
