@@ -17,6 +17,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cs414finalprojectandroid.Utilities.constrain
+import com.example.cs414finalprojectandroid.Utilities.toByteArray
 import com.example.cs414finalprojectandroid.Utilities.toHex
 import com.example.cs414finalprojectandroid.bluetooth.ArduinoPacket
 import com.example.cs414finalprojectandroid.bluetooth.BluetoothService
@@ -128,14 +129,6 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
         }
 
         accel_Switch.setOnClickListener { updateSensorInfoText() }
-
-        sendPacketBtn.setOnClickListener {
-            // Send packets
-            if (BLUETOOTH_CONNECTED) {
-                val packet = ArduinoPacket.create(ArduinoPacket.STOP_MOTORS_PACKET_ID)
-                gbgBTService.write(packet)
-            }
-        }
     }
 
     override fun onPause() {
@@ -219,12 +212,12 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
 
-    private fun setCalibrationX(value: Int){
+    private fun setCalibrationX(value: Int) {
         if (value < accelCalib.minX) accelCalib.minX = value
         if (value > accelCalib.maxX) accelCalib.maxX = value
     }
 
-    private fun setCalibrationY(value: Int){
+    private fun setCalibrationY(value: Int) {
         if (value < accelCalib.minY) accelCalib.minY = value
         if (value > accelCalib.maxY) accelCalib.maxY = value
     }
@@ -245,8 +238,8 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
         val multiplierX = UBYTE_MAX / GRAV_ACCEL
         val multiplierY = UBYTE_MAX / GRAV_ACCEL
 
-        val calcAccelX = constrain(accelX * multiplierX, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt()
-        val calcAccelY = constrain(accelY * multiplierY, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt()
+        val calcAccelX = constrain(accelX * multiplierX, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt().toShort()
+        val calcAccelY = constrain(accelY * multiplierY, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt().toShort()
 
         if (accel_Switch.isChecked) {
             accelXTextView.text = "$calcAccelX"
@@ -259,11 +252,12 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
         if (parentAppControlOverride) {
             // Send packets
             if (BLUETOOTH_CONNECTED) {
-                val packet = ArduinoPacket.create(
-                    ArduinoPacket.SENSOR_DATA_PACKET_ID,
-                    calcAccelX,
-                    calcAccelY
-                )
+                val sensorXBytes = calcAccelX.toByteArray()
+                val sensorYBytes = calcAccelY.toByteArray()
+
+                val packetData = sensorXBytes + sensorYBytes
+
+                val packet = ArduinoPacket.create(ArduinoPacket.SENSOR_DATA_PACKET_ID, packetData)
                 gbgBTService.write(packet)
             }
         }

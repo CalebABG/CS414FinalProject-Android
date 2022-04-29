@@ -1,6 +1,7 @@
 package com.example.cs414finalprojectandroid.bluetooth
 
-import kotlin.math.abs
+import com.example.cs414finalprojectandroid.Utilities.toByteArray
+import java.util.zip.CRC32
 
 /*
     Index      0:       Packet START
@@ -18,63 +19,89 @@ import kotlin.math.abs
 
 class ArduinoPacket {
     companion object {
+        val crc32: CRC32 = CRC32()
+
         // Length in bytes
-        const val PACKET_LENGTH = 0x7
+        const val DATA_LENGTH: Short = 0x40
 
         // Start and End packet bytes
-        const val PACKET_START = 0x1
-        const val PACKET_END = 0x4
+        const val PACKET_START: Byte = 0x1
+        const val PACKET_END: Byte = 0x4
 
         // Packet ID kinds
-        const val SENSOR_DATA_PACKET_ID = 0xD7
-        const val STOP_MOTORS_PACKET_ID = 0xE0
-        const val PARENTAL_CONTROL_PACKET_ID = 0xDF
+        const val SENSOR_DATA_PACKET_ID: Short = 0xD7
+        const val STOP_MOTORS_PACKET_ID: Short = 0xE0
+        const val PARENTAL_CONTROL_PACKET_ID: Short = 0xDF
 
-        fun create(packetId: Int, sensorX: Int = 0, sensorY: Int = 0): ByteArray {
+        fun create(packetId: Short, data: ByteArray = byteArrayOf()): ByteArray {
             return ArduinoPacket()
                 .setHeader(packetId)
-                .setData(sensorX, sensorY)
+                .setData(data)
+                .setCRC32()
                 .build()
         }
     }
 
-    private var data: ByteArray = ByteArray(PACKET_LENGTH)
-
-    init {
-        // Set START byte
-        data[0] = PACKET_START.toByte()
-
-        // Set END byte
-        data[6] = PACKET_END.toByte()
-    }
+    private var id: Short = 0x0
+    private var crc: Int = 0x0
+    private var ack: Byte = 0x1
+    private var dataLength: Short = 0x0
+    private var data: ByteArray = ByteArray(DATA_LENGTH.toInt())
 
     fun build(): ByteArray {
-        return data
+        val packetLength = 75
+        val packet = ByteArray(packetLength)
+
+        packet[0] = PACKET_START
+        packet[packetLength - 1] = PACKET_END
+
+        val idBytes = id.toByteArray()
+        packet[1] = idBytes[0]
+        packet[2] = idBytes[1]
+
+        val crcBytes = crc.toByteArray()
+        packet[3] = crcBytes[0]
+        packet[4] = crcBytes[1]
+        packet[5] = crcBytes[2]
+        packet[6] = crcBytes[3]
+
+        packet[7] = ack
+
+        val dataLengthBytes = dataLength.toByteArray()
+        packet[8] = dataLengthBytes[0]
+        packet[9] = dataLengthBytes[1]
+
+        for (i in 0 until DATA_LENGTH)
+            packet[i + 10] = data[i]
+
+        return packet
     }
 
-    fun setHeader(packetId: Int): ArduinoPacket {
-        // Set ID
-        data[1] = packetId.toByte()
-
-        // Set ACK
-        data[2] = 0x1
+    fun setHeader(packetId: Short): ArduinoPacket {
+        id = packetId
 
         return this
     }
 
-    fun setData(sensorX: Int, sensorY: Int): ArduinoPacket {
-        var sign: Byte = 0x0
+    fun setCRC32(): ArduinoPacket {
+        crc32.update(id.toInt())
+        crc32.update(ack.toInt())
+        crc32.update(dataLength.toInt())
+        crc32.update(data)
 
-        if (sensorX < 0) sign = 0x1
-        if (sensorY < 0) sign = 0x2
-        if (sensorX < 0 && sensorY < 0) sign = 0x3
+        crc = crc32.value.toInt()
+        crc32.reset()
 
-        // Set Sign
-        data[3] = sign
+        return this
+    }
 
-        // Set Sensor Data
-        data[4] = abs(sensorX).toByte()
-        data[5] = abs(sensorY).toByte()
+    fun setData(data: ByteArray): ArduinoPacket {
+        if (data.size in 1..DATA_LENGTH) {
+            dataLength = data.size.toShort()
+
+            for (i in data.indices)
+                this.data[i] = data[i]
+        }
 
         return this
     }

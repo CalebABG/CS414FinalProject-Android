@@ -2,6 +2,7 @@ package com.example.cs414finalprojectandroid
 
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.min
 
 object Utilities {
     // Converts 4 bytes (uint32_t) to an unsigned integer (Arduino is little endian)
@@ -10,23 +11,35 @@ object Utilities {
         else (bytes[0] shl 24) + (bytes[1] shl 16) + (bytes[2] shl 8) + bytes[3]
     }
 
-    fun getUnsignedBytes(bytes: ByteArray): IntArray {
-        val bytesLen = bytes.size
-        val ints = IntArray(bytesLen)
-        for (i in 0 until bytesLen)
-            ints[i] = toUnsignedInt(bytes[i])
-        return ints
-    }
-
-    fun toUnsignedInt(x: Byte): Int {
-        return x.toInt() and 0xff
-    }
-
     fun Int.toByteArray(): ByteArray {
         return ByteBuffer
             .allocate(Int.SIZE_BYTES)
             .order(ByteOrder.LITTLE_ENDIAN)
             .putInt(this)
+            .array()
+    }
+
+    fun Long.toByteArray(): ByteArray {
+        return ByteBuffer
+            .allocate(Long.SIZE_BYTES)
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .putLong(this)
+            .array()
+    }
+
+    fun Short.toByteArray(): ByteArray {
+        return ByteBuffer
+            .allocate(Short.SIZE_BYTES)
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .putShort(this)
+            .array()
+    }
+
+    fun Float.toByteArray(): ByteArray {
+        return ByteBuffer
+            .allocate(Float.SIZE_BYTES)
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .putFloat(this)
             .array()
     }
 
@@ -39,11 +52,11 @@ object Utilities {
     }
 
     fun constrain(amt: Double, low: Double, high: Double): Double {
-        return if (amt < low) low else Math.min(amt, high)
+        return if (amt < low) low else min(amt, high)
     }
 
     fun constrain(amt: Float, low: Float, high: Float): Double {
-        return if (amt < low) low.toDouble() else Math.min(amt, high)
+        return if (amt < low) low.toDouble() else min(amt, high)
             .toDouble()
     }
 

@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity() {
 
     // TODO: Cache response Bitmap; Use correct call and response handlers to set Bitmap
     private fun setMainScreenLoremPicsumImage() {
-        val call = loremPicsumService.fetchMainScreenImage(250.toString(), 250.toString())
+        val call = loremPicsumService.fetchMainScreenImage(350.toString(), 350.toString())
 
         call.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -131,7 +131,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun canShowRequestPermissionsRationale() =
         ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.BLUETOOTH) ||
-                ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                ActivityCompat.shouldShowRequestPermissionRationale(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                )
 
     private fun neededPermissionsGranted(perms: MutableMap<String, Int>) =
         perms[Manifest.permission.BLUETOOTH] == PackageManager.PERMISSION_GRANTED &&
@@ -146,7 +149,11 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         if (requestCode == REQUEST_ENABLE_BT) {
             if (grantResults.isNotEmpty()) {
                 for (i in permissions.indices) permissionsMap[permissions[i]] = grantResults[i]
@@ -157,7 +164,11 @@ class MainActivity : AppCompatActivity() {
                     if (canShowRequestPermissionsRationale()) {
                         showRequestPermissionsDialog()
                     } else {
-                        Toast.makeText(this, "Go to settings and enable permissions", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            this,
+                            "Go to settings and enable permissions",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
             }
