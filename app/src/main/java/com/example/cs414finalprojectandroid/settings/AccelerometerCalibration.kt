@@ -7,4 +7,13 @@ data class AccelerometerCalibration(
     var maxY: Int = 0,
     var biasX: Int = 0,
     var biasY: Int = 0
-)
+) {
+    fun reset() {
+        minX = 0
+        maxX = 0
+        minY = 0
+        maxY = 0
+        biasX = 0
+        biasY = 0
+    }
+}

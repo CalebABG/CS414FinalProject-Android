@@ -3,6 +3,7 @@ package com.example.cs414finalprojectandroid
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.hardware.Sensor
@@ -14,121 +15,112 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cs414finalprojectandroid.Utilities.constrain
+import com.example.cs414finalprojectandroid.Utilities.showToast
 import com.example.cs414finalprojectandroid.Utilities.toByteArray
 import com.example.cs414finalprojectandroid.Utilities.toHex
 import com.example.cs414finalprojectandroid.bluetooth.ArduinoPacket
 import com.example.cs414finalprojectandroid.bluetooth.BluetoothService
 import com.example.cs414finalprojectandroid.settings.AccelerometerCalibration
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_control.*
 import java.lang.ref.WeakReference
 
 class ControlActivity : AppCompatActivity(), SensorEventListener {
 
     companion object {
+        var PARENTAL_OVERRIDE = true
+
         var BLUETOOTH_CONNECTED = false
         var BLUETOOTH_CONNECTING = false
 
         const val UBYTE_MAX = 255.0
         const val GRAV_ACCEL = 9.81
-
         const val MIN_MOTOR_VAL = -UBYTE_MAX
         const val MAX_MOTOR_VAL = UBYTE_MAX
 
-        // Acceleration Calibration
         var accelCalib = AccelerometerCalibration()
+
+        const val FILE_NAME = "CS414FinalProject"
+        const val TODO_LIST_KEY = "calibration"
+
+        const val ACTIVE_SHIELD_COLOR = "#32A341"
+        const val INACTIVE_SHIELD_COLOR = "#AEB1AE"
+
+        val gson = Gson()
+
+        fun getAppSharedPreferences(context: Context): SharedPreferences {
+            return context.getSharedPreferences(FILE_NAME, MODE_PRIVATE)
+        }
     }
 
-    lateinit var gbgBTService: BluetoothService
-
-    lateinit var sensorManager: SensorManager
-    lateinit var accelerometer: Sensor
-
-    /**
-     * The Handler that gets information back from the MyBluetoothService
-     */
-    private lateinit var mHandler: MyHandler
-
-    private var parentAppControlOverride = true
-
-    private val activeShieldColor = "#32A341"
-    private val inactiveShieldColor = "#AEB1AE"
+    private lateinit var accelerometer: Sensor
+    private lateinit var sensorManager: SensorManager
+    private lateinit var bluetoothService: BluetoothService
+    private lateinit var bluetoothMessageHandler: BluetoothMessageHandler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_control)
 
-        mHandler = MyHandler(this)
-
         updateShieldIconColor()
         updateSensorInfoText()
 
-        // Initialize the GBGBluetoothService to perform bluetooth connections
-        gbgBTService = BluetoothService(mHandler)
+        bluetoothMessageHandler = BluetoothMessageHandler(this)
+        bluetoothService = BluetoothService(bluetoothMessageHandler)
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
-        if (!BLUETOOTH_CONNECTED)
-            connectToArduinoBluetooth()
+        if (!BLUETOOTH_CONNECTED) connectToBluetooth()
+
+        saveAccelCalibrationButton.setOnClickListener { saveAccelCalibrationToSharedPreferences() }
+        loadAccelCalibrationButton.setOnClickListener { loadAccelCalibrationFromSharedPreferences() }
+        resetAccelCalibrationButton.setOnClickListener { resetAccelCalibration() }
 
         parentalOverrideBtn.setOnClickListener {
             toggleParentalOverride()
             updateShieldIconColor()
 
-            if (parentAppControlOverride) {
-                Toast.makeText(this, "Activating Parental Control", Toast.LENGTH_SHORT).show()
+            if (PARENTAL_OVERRIDE) {
+                showToast(this, "Activating Parental Control")
             } else {
-                Toast.makeText(this, "Deactivating Parental Control", Toast.LENGTH_SHORT).show()
                 if (BLUETOOTH_CONNECTED) {
+                    showToast(this, "Deactivating Parental Control")
                     val packet = ArduinoPacket.create(ArduinoPacket.PARENTAL_CONTROL_PACKET_ID)
-                    gbgBTService.write(packet)
+                    bluetoothService.write(packet)
                 }
             }
         }
 
         emergencyStopBtn.setOnClickListener {
-            Toast.makeText(this, "Stopping Motors!", Toast.LENGTH_SHORT).show()
             if (BLUETOOTH_CONNECTED) {
+                showToast(this, "Stopping Motors!")
                 val packet = ArduinoPacket.create(ArduinoPacket.STOP_MOTORS_PACKET_ID)
-                gbgBTService.write(packet)
+                bluetoothService.write(packet)
             }
         }
+
         emergencyStopBtn.setOnLongClickListener {
-            Toast.makeText(
-                this,
-                "Tooltip: ${emergencyStopBtn.contentDescription}",
-                Toast.LENGTH_SHORT
-            ).show()
+            showToast(this, "Tooltip: ${emergencyStopBtn.contentDescription}")
             true
         }
 
         btReconnectBtn.setOnClickListener {
             when {
-                BLUETOOTH_CONNECTED -> Toast.makeText(
-                    this,
-                    "Already Connected",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                BLUETOOTH_CONNECTING -> Toast.makeText(
-                    this,
-                    "Connecting...",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                else -> connectToArduinoBluetooth()
+                BLUETOOTH_CONNECTED -> showToast(this, "Already Connected")
+                BLUETOOTH_CONNECTING -> showToast(this, "Connecting...")
+                else -> connectToBluetooth()
             }
         }
 
-        bt_disconnectBtn.setOnClickListener {
-            if (BLUETOOTH_CONNECTED) disconnectFromArduinoBluetooth()
-            else Toast.makeText(this, "Not Connected", Toast.LENGTH_SHORT).show()
+        btDisconnectBtn.setOnClickListener {
+            if (BLUETOOTH_CONNECTED) disconnectFromBluetooth()
+            else showToast(this, "Not Connected")
         }
 
-        accel_Switch.setOnClickListener { updateSensorInfoText() }
+        accelSwitch.setOnClickListener { updateSensorInfoText() }
     }
 
     override fun onPause() {
@@ -138,62 +130,73 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onResume() {
         super.onResume()
+        loadAccelCalibrationFromSharedPreferences()
 
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL, 1000)
-
-        // Performing this check in onResume() covers the case in which BT was
-        // not enabled during onStart(), so we were paused to enable it...
-        // onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
-        if (gbgBTService.state == BluetoothService.STATE_NONE) {
-            // Start the Bluetooth chat services
-            gbgBTService.start()
-        }
+        bluetoothService.start()
     }
 
     override fun onDestroy() {
-        gbgBTService.stop()
+        bluetoothService.stop()
         super.onDestroy()
     }
 
     override fun onBackPressed() {
-        doExit()
+        showExitDialog()
     }
 
-    /**
-     * Exit the app if user select yes.
-     */
-    private fun doExit() {
+    private fun showExitDialog() {
         AlertDialog.Builder(this)
             .setPositiveButton("Yes") { _, _ -> finish() }
             .setNegativeButton("No", null)
-            .setMessage("Do You Want to Exit?")
+            .setMessage("Confirm exit?")
             .setTitle(R.string.app_name)
             .show()
     }
 
-    private fun connectToArduinoBluetooth() {
+    private fun getSavedAccelCalibration(): AccelerometerCalibration {
+        val savedCalibrationString = getAppSharedPreferences(this).getString(TODO_LIST_KEY, "") ?: ""
+        return if (savedCalibrationString.isNotEmpty()) gson.fromJson(savedCalibrationString, AccelerometerCalibration::class.java)
+        else AccelerometerCalibration()
+    }
+
+    private fun saveAccelCalibrationToSharedPreferences() {
+        val sharedPreferences = getAppSharedPreferences(this)
+        val editor = sharedPreferences.edit()
+
+        val todoListJson = gson.toJson(accelCalib)
+        editor.putString(TODO_LIST_KEY, todoListJson)
+
+        editor.apply()
+    }
+
+    private fun loadAccelCalibrationFromSharedPreferences() {
+        accelCalib = getSavedAccelCalibration()
+    }
+
+    private fun resetAccelCalibration() {
+        accelCalib.reset()
+    }
+
+    private fun connectToBluetooth() {
         connectDevice()
     }
 
-    private fun disconnectFromArduinoBluetooth() {
-        gbgBTService.stop()
+    private fun disconnectFromBluetooth() {
+        bluetoothService.stop()
     }
 
     private fun connectDevice() {
-        val device = MainActivity.bluetoothAdapter!!.getRemoteDevice(Constants.GoBabyGoBTMAC)
+        val device = MainActivity
+            .getSystemBluetoothAdapter(this)!!
+            .getRemoteDevice(Constants.BLUETOOTH_MAC)
 
-        // Only if the state is STATE_NONE, do we know that we haven't started already
-        if (gbgBTService.state == BluetoothService.STATE_NONE) {
-            // Start the Bluetooth chat services
-            gbgBTService.start()
-        }
-
-        // Attempt to connect to the device
-        gbgBTService.connect(device, true)
+        bluetoothService.start()
+        bluetoothService.connect(device, true)
     }
 
     private fun toggleParentalOverride() {
-        parentAppControlOverride = !parentAppControlOverride
+        PARENTAL_OVERRIDE = !PARENTAL_OVERRIDE
     }
 
     private fun updateShieldIconColor() {
@@ -202,12 +205,12 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun getBackgroundTint(): Int {
-        return if (parentAppControlOverride) Color.parseColor(activeShieldColor)
-        else Color.parseColor(inactiveShieldColor)
+        return if (PARENTAL_OVERRIDE) Color.parseColor(ACTIVE_SHIELD_COLOR)
+        else Color.parseColor(INACTIVE_SHIELD_COLOR)
     }
 
     private fun updateSensorInfoText() {
-        accel_Switch.text = if (accel_Switch.isChecked) "Cal" else "Raw"
+        accelSwitch.text = if (accelSwitch.isChecked) "Cal" else "Raw"
     }
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
@@ -227,21 +230,25 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
         val accelX: Float = event.values[0]
         val accelY: Float = event.values[1]
 
-        setCalibrationX(accelX.toInt())
-        setCalibrationY(accelY.toInt())
+        if (!freezeAccelCalibrationSwitch.isChecked) {
+            setCalibrationX(accelX.toInt())
+            setCalibrationY(accelY.toInt())
+        }
 
-        accelMinXTextView.text = "Accelerometer Min X: ${accelCalib.minX}"
-        accelMinYTextView.text = "Accelerometer Min Y: ${accelCalib.minY}"
-        accelMaxXTextView.text = "Accelerometer Max X: ${accelCalib.maxX}"
-        accelMaxYTextView.text = "Accelerometer Max Y: ${accelCalib.maxY}"
+        accelMinXTextView.text = "Accel Min X: ${accelCalib.minX}"
+        accelMinYTextView.text = "Accel Min Y: ${accelCalib.minY}"
+        accelMaxXTextView.text = "Accel Max X: ${accelCalib.maxX}"
+        accelMaxYTextView.text = "Accel Max Y: ${accelCalib.maxY}"
 
         val multiplierX = UBYTE_MAX / GRAV_ACCEL
         val multiplierY = UBYTE_MAX / GRAV_ACCEL
 
-        val calcAccelX = constrain(accelX * multiplierX, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt().toShort()
-        val calcAccelY = constrain(accelY * multiplierY, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt().toShort()
+        val calcAccelX =
+            constrain(accelX * multiplierX, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt().toShort()
+        val calcAccelY =
+            constrain(accelY * multiplierY, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt().toShort()
 
-        if (accel_Switch.isChecked) {
+        if (accelSwitch.isChecked) {
             accelXTextView.text = "$calcAccelX"
             accelYTextView.text = "$calcAccelY"
         } else {
@@ -249,7 +256,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
             accelYTextView.text = "${"%.3f".format(accelY)} m/s\u00B2"
         }
 
-        if (parentAppControlOverride) {
+        if (PARENTAL_OVERRIDE) {
             // Send packets
             if (BLUETOOTH_CONNECTED) {
                 val sensorXBytes = calcAccelX.toByteArray()
@@ -258,18 +265,18 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
                 val packetData = sensorXBytes + sensorYBytes
 
                 val packet = ArduinoPacket.create(ArduinoPacket.SENSOR_DATA_PACKET_ID, packetData)
-                gbgBTService.write(packet)
+                bluetoothService.write(packet)
             }
         }
     }
 
-    // TODO: Make sure using Non-Deprecated constructor behaves as intended
-    private class MyHandler(activity: ControlActivity) : Handler(Looper.getMainLooper()) {
-        private val mActivity: WeakReference<ControlActivity> = WeakReference(activity)
+    private class BluetoothMessageHandler(activity: ControlActivity) :
+        Handler(Looper.getMainLooper()) {
+        private val activityReference: WeakReference<ControlActivity> = WeakReference(activity)
 
         @SuppressLint("SetTextI18n")
         override fun handleMessage(msg: Message) {
-            val activity = mActivity.get()
+            val activity = activityReference.get()
 
             if (activity != null) {
                 when (msg.what) {
@@ -283,7 +290,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
 
                         BluetoothService.STATE_CONNECTING -> {
                             BLUETOOTH_CONNECTING = true
-                            activity.btStatusTextView.text = "Connecting... "
+                            activity.btStatusTextView.text = "Connecting..."
                         }
 
                         BluetoothService.STATE_NONE,
@@ -295,21 +302,18 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
                     }
 
                     Constants.MESSAGE_WRITE -> {
-                        val writeBuff: ByteArray = msg.obj as ByteArray
+                        val writeBuff = msg.obj as ByteArray
                         Log.d(Constants.TAG, writeBuff.toHex())
                     }
 
                     Constants.MESSAGE_READ -> {
-                        val readBuff: ByteArray = msg.obj as ByteArray
+                        val readBuff = msg.obj as ByteArray
                         Log.d(Constants.TAG, readBuff.toHex())
                     }
 
                     Constants.MESSAGE_TOAST -> {
-                        Toast.makeText(
-                            activity,
-                            msg.data.getString(Constants.TOAST),
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val toastString = msg.data.getString(Constants.TOAST)
+                        if (!toastString.isNullOrEmpty()) showToast(activity, toastString)
                     }
                 }
             }

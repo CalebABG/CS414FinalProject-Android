@@ -1,17 +1,20 @@
 package com.example.cs414finalprojectandroid
 
 import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.example.cs414finalprojectandroid.Utilities.showToast
 import com.example.cs414finalprojectandroid.retrofit.LoremPicsumService
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.ResponseBody
@@ -20,29 +23,24 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 
-
 /*
 
 Project Points (8):
 
-1 - Use of SharedPreferences for persisting Min/Max sensor config
-1 - Use of Android service that requires user-granted permissions (Bluetooth + Location)
+DONE 1 - Use of SharedPreferences for persisting Min/Max sensor config
+DONE 1 - Use of Android service that requires user-granted permissions (Bluetooth + Location)
 1 - Use of Notifications (local notification - app put in background, de-register accelerometer listener) / safety if bluetooth connected
 2 - Use of SQLite database (store sent packets, can use to replay motion)
-2 - Use of at least one device sensor (Accelerometer)
-2 - Use of a REST-ful HTTP API [Retrofit] (Use for Start screen photo) - look at `Lorem Picsum`: https://picsum.photos/
+DONE 2 - Use of at least one device sensor (Accelerometer)
+DONE 2 - Use of a REST-ful HTTP API [Retrofit] (Use for Start screen photo) - look at `Lorem Picsum`: https://picsum.photos/
 
 */
 
 class MainActivity : AppCompatActivity() {
     companion object {
-        /* Local Bluetooth adapter */
-        var bluetoothAdapter: BluetoothAdapter? = null
-
         const val LOREM_PICSUM_URL = "https://picsum.photos/"
 
-        // Intent request codes
-        const val REQUEST_ENABLE_BT = 75
+        const val REQUEST_ENABLE_BT = 0xE4
 
         val permissionsMap: MutableMap<String, Int> = mutableMapOf(
             Manifest.permission.BLUETOOTH to PackageManager.PERMISSION_DENIED,
@@ -57,53 +55,60 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_BACKGROUND_LOCATION,
         )
+
+        fun getSystemBluetoothAdapter(activity: Activity): BluetoothAdapter? {
+            return (activity.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
+        }
     }
 
-    var retrofit: Retrofit = Retrofit.Builder()
+    private var bitmap: Bitmap? = null
+
+    private var bluetoothAdapter: BluetoothAdapter? = null
+
+    private var retrofit = Retrofit.Builder()
         .baseUrl(LOREM_PICSUM_URL)
         .build()
 
-    var loremPicsumService: LoremPicsumService = retrofit.create(LoremPicsumService::class.java)
+    private var loremPicsService = retrofit
+        .create(LoremPicsumService::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        bluetoothAdapter = bluetoothManager.adapter
+        bluetoothAdapter = getSystemBluetoothAdapter(this)
 
         continueBtn.setOnClickListener { startCarControlActivity() }
-
-        setMainScreenLoremPicsumImage()
     }
 
-    // TODO: Cache response Bitmap; Use correct call and response handlers to set Bitmap
-    private fun setMainScreenLoremPicsumImage() {
-        val call = loremPicsumService.fetchMainScreenImage(350.toString(), 350.toString())
+    override fun onResume() {
+        super.onResume()
+        setScreenLoremPicsImage()
+    }
+
+    private fun setScreenLoremPicsImage() {
+        val call = loremPicsService.fetchMainScreenImage(350.toString(), 350.toString())
 
         call.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                val body = response.body()
-                val bytes = body!!.bytes()
+                if (bitmap == null) {
+                    val body = response.body()
+                    val bytes = body!!.bytes()
+                    bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                }
 
-                mainScreenImage.setImageBitmap(
-                    BitmapFactory.decodeByteArray(
-                        bytes,
-                        0,
-                        bytes.size
-                    )
-                )
+                mainScreenImage.setImageBitmap(bitmap)
             }
 
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                // Handle failure
+                showToast(this@MainActivity, "Could not fetch LoremPics Image :(")
             }
         })
     }
 
     private fun startCarControlActivity() {
         if (bluetoothAdapter == null) {
-            Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show()
+            showToast(this, "Bluetooth is not available", Toast.LENGTH_LONG)
         } else {
             if (hasPermissions(this, PERMISSIONS)) {
                 gotoCarControl()
@@ -164,11 +169,7 @@ class MainActivity : AppCompatActivity() {
                     if (canShowRequestPermissionsRationale()) {
                         showRequestPermissionsDialog()
                     } else {
-                        Toast.makeText(
-                            this,
-                            "Go to settings and enable permissions",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        showToast(this, "Go to settings and enable permissions", Toast.LENGTH_LONG)
                     }
                 }
             }

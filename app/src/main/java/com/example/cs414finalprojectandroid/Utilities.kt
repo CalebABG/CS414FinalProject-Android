@@ -1,14 +1,14 @@
 package com.example.cs414finalprojectandroid
 
+import android.content.Context
+import android.widget.Toast
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.min
 
 object Utilities {
-    // Converts 4 bytes (uint32_t) to an unsigned integer (Arduino is little endian)
-    private fun composeUInt32(bytes: IntArray, isLittleEndian: Boolean): Int {
-        return if (isLittleEndian) (bytes[3] shl 24) + (bytes[2] shl 16) + (bytes[1] shl 8) + bytes[0]
-        else (bytes[0] shl 24) + (bytes[1] shl 16) + (bytes[2] shl 8) + bytes[3]
+    fun showToast(context: Context, text: String, toastLength: Int = Toast.LENGTH_SHORT) {
+        Toast.makeText(context, text, toastLength).show()
     }
 
     fun Int.toByteArray(): ByteArray {
@@ -43,6 +43,13 @@ object Utilities {
             .array()
     }
 
+    fun ByteArray.toFloat(byteOrder: ByteOrder): Float {
+        return ByteBuffer
+            .wrap(this)
+            .order(byteOrder)
+            .float
+    }
+
     fun map(value: Double, min1: Double, max1: Double, min2: Double, max2: Double): Double {
         return min2 + (max2 - min2) * ((value - min1) / (max1 - min1))
     }
@@ -58,6 +65,17 @@ object Utilities {
     fun constrain(amt: Float, low: Float, high: Float): Double {
         return if (amt < low) low.toDouble() else min(amt, high)
             .toDouble()
+    }
+
+    /*
+    * Reference: https://stackoverflow.com/questions/66613717/kotlin-convert-hex-string-to-bytearray
+    */
+    fun String.hexToByteArray(): ByteArray {
+        check(length % 2 == 0) { "Must have an even length" }
+
+        return chunked(2)
+            .map { it.toInt(16).toByte() }
+            .toByteArray()
     }
 
     fun IntArray.toHex(): String {
