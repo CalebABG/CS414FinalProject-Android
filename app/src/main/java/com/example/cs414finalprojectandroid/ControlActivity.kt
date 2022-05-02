@@ -15,6 +15,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cs414finalprojectandroid.Utilities.constrain
 import com.example.cs414finalprojectandroid.Utilities.showToast
@@ -75,6 +76,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
 
         if (!BLUETOOTH_CONNECTED) connectToBluetooth()
 
+        setDriveParametersButton.setOnClickListener { sendDriveParameters() }
         saveAccelCalibrationButton.setOnClickListener { saveAccelCalibrationToSharedPreferences() }
         loadAccelCalibrationButton.setOnClickListener { loadAccelCalibrationFromSharedPreferences() }
         resetAccelCalibrationButton.setOnClickListener { resetAccelCalibration() }
@@ -211,6 +213,30 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
 
     private fun updateSensorInfoText() {
         accelSwitch.text = if (accelSwitch.isChecked) "Cal" else "Raw"
+    }
+
+    private fun sendDriveParameters() {
+        val driveSpeedScaleText = driveSpeedScaleEditText.text.toString()
+        val turningSpeedScaleText = turningSpeedScaleEditText.text.toString()
+
+        if (driveSpeedScaleText.isEmpty() || turningSpeedScaleText.isEmpty())
+            showToast(this, "Please make sure both parameters are not Empty", Toast.LENGTH_LONG)
+        else {
+            val driveSpeedScaleFloat = driveSpeedScaleText.toFloatOrNull()
+            val turningSpeedScaleFloat = turningSpeedScaleText.toFloatOrNull()
+
+            if (driveSpeedScaleFloat == null || turningSpeedScaleFloat == null)
+                showToast(this, "Please make sure both parameters are valid Floats", Toast.LENGTH_LONG)
+            else {
+                val driveSpeedScaleBytes = driveSpeedScaleFloat.toByteArray()
+                val turningSpeedScaleBytes = turningSpeedScaleFloat.toByteArray()
+
+                val packetData = driveSpeedScaleBytes + turningSpeedScaleBytes
+
+                val packet = ArduinoPacket.create(ArduinoPacket.DRIVE_PARAMETERS_ID, packetData)
+                bluetoothService.write(packet)
+            }
+        }
     }
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}

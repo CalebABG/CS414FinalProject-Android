@@ -21,10 +21,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
-                android:layout_margin="8dp"
+                android:layout_margin="6dp"
                 app:cardBackgroundColor="@color/colorPrimary"
                 app:cardCornerRadius="8dp"
-                app:contentPadding="3dp">
+                app:contentPadding="2dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -103,11 +103,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp"
                 app:cardBackgroundColor="@color/colorPrimary"
                 app:cardCornerRadius="8dp"
-                app:contentPadding="5dp">
+                app:contentPadding="2dp">
 
 
                 <LinearLayout
@@ -215,12 +215,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginEnd="6dp"
                 app:cardBackgroundColor="@color/colorPrimary"
                 app:cardCornerRadius="8dp"
-                app:contentPadding="5dp">
+                app:contentPadding="2dp">
 
 
                 <LinearLayout
@@ -363,6 +363,67 @@
 
                     </LinearLayout>
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <Button
+                                android:id="@+id/saveAccelCalibrationButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_marginEnd="8dp"
+                                android:text="Save Calibration"
+                                android:textColor="@android:color/white"
+                                android:backgroundTint="@color/colorAccent"
+                                android:textSize="14sp" />
+
+                            <Button
+                                android:id="@+id/resetAccelCalibrationButton"
+                                android:backgroundTint="@color/colorAccent"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:text="Reset Calibration"
+                                android:layout_marginEnd="8dp"
+                                android:textColor="@android:color/white"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <Button
+                                android:id="@+id/loadAccelCalibrationButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_marginEnd="8dp"
+                                android:text="Load Calibration"
+                                android:textColor="@android:color/white"
+                                android:backgroundTint="@color/colorAccent"
+                                android:textSize="14sp" />
+
+                            <ToggleButton
+                                app:cardCornerRadius="8dp"
+                                android:id="@+id/freezeAccelCalibrationSwitch"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:backgroundTint="@color/colorAccent"
+                                android:checked="true"
+                                android:textColor="@color/white"
+                                android:textOff="Freeze Calibration"
+                                android:textOn="Calibration Frozen"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
@@ -378,62 +439,63 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:layout_height="wrap_content">
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
 
-                        <Button
-                            android:id="@+id/saveAccelCalibrationButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_marginEnd="8dp"
-                            android:text="Save Calibration"
-                            android:textColor="@android:color/white"
-                            android:backgroundTint="@color/colorAccent"
-                            android:textSize="14sp" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Drive Speed Scale"
+                            android:textColor="#FFFFFF"
+                            android:textSize="17sp"
+                            android:textStyle="bold" />
 
-                        <Button
-                            android:id="@+id/resetAccelCalibrationButton"
-                            android:backgroundTint="@color/colorAccent"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:text="Reset Calibration"
-                            android:layout_marginEnd="8dp"
-                            android:textColor="@android:color/white"
-                            android:textSize="14sp" />
+                        <EditText
+                            android:id="@+id/driveSpeedScaleEditText"
+                            android:layout_width="180dp"
+                            android:layout_height="wrap_content"
+                            android:ems="10"
+                            android:inputType="numberDecimal"
+                            android:text=".50"
+                            android:textColor="#FFFFFF" />
                     </LinearLayout>
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:layout_marginStart="5dp">
 
-                        <Button
-                            android:id="@+id/loadAccelCalibrationButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_marginEnd="8dp"
-                            android:text="Load Calibration"
-                            android:textColor="@android:color/white"
-                            android:backgroundTint="@color/colorAccent"
-                            android:textSize="14sp" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Turning Speed Scale"
+                            android:textColor="#FFFFFF"
+                            android:textSize="17sp"
+                            android:textStyle="bold" />
 
-                        <ToggleButton
-                            app:cardCornerRadius="8dp"
-                            android:id="@+id/freezeAccelCalibrationSwitch"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:backgroundTint="@color/colorAccent"
-                            android:checked="true"
-                            android:textColor="@color/white"
-                            android:textOff="Freeze Calibration"
-                            android:textOn="Calibration Frozen"
-                            android:textSize="14sp" />
+                        <EditText
+                            android:id="@+id/turningSpeedScaleEditText"
+                            android:layout_width="180dp"
+                            android:layout_height="wrap_content"
+                            android:ems="10"
+                            android:inputType="numberDecimal"
+                            android:text=".115"
+                            android:textColor="#FFFFFF" />
                     </LinearLayout>
+
+                    <Button
+                        android:id="@+id/setDriveParametersButton"
+                        android:layout_width="135dp"
+                        android:layout_height="match_parent"
+                        android:text="Set Parameters"
+                        android:textSize="13sp"
+                        android:backgroundTint="@color/colorAccent"
+                        android:layout_marginStart="5dp" />
 
                 </LinearLayout>
 

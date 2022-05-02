@@ -8,7 +8,7 @@ class ArduinoPacket {
         val crc32: CRC32 = CRC32()
 
         // Length in bytes
-        const val DATA_LENGTH: Short = 0xA
+        const val DATA_LENGTH: Short = 0x10
 
         // Start and End packet bytes
         const val PACKET_START: Byte = 0x1
@@ -16,6 +16,7 @@ class ArduinoPacket {
 
         // Packet ID kinds
         const val SENSOR_DATA_PACKET_ID: Short = 0xD7
+        const val DRIVE_PARAMETERS_ID: Short = 0xD8
         const val STOP_MOTORS_PACKET_ID: Short = 0xE0
         const val PARENTAL_CONTROL_PACKET_ID: Short = 0xDF
 
