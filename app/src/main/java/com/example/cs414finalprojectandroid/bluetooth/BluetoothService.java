@@ -65,8 +65,16 @@ public class BluetoothService {
     /**
      * Return the current connection state.
      */
-    public synchronized int getState() {
+    public int getState() {
         return state;
+    }
+
+    public boolean isConnected() {
+        return getState() == STATE_CONNECTED;
+    }
+
+    public boolean isConnecting() {
+        return getState() == STATE_CONNECTING;
     }
 
     /**

@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ControlActivity">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,11 +21,122 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start"
+                android:layout_gravity="center"
                 android:layout_margin="6dp"
                 app:cardBackgroundColor="@color/colorPrimary"
                 app:cardCornerRadius="8dp"
-                app:contentPadding="2dp">
+                app:contentPadding="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/editText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_column="0"
+                            android:layout_marginStart="4dp"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginEnd="4dp"
+                            android:text="Sensors"
+                            android:textColor="@android:color/white"
+                            android:textSize="18sp" />
+
+                        <Switch
+                            android:id="@+id/accelSwitch"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_column="1"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginEnd="4dp"
+                            android:layout_marginBottom="4dp"
+                            android:checked="true"
+                            android:text="Calc"
+                            android:textAlignment="textEnd"
+                            android:textColor="@android:color/white"
+                            android:textSize="17sp" />
+
+                    </TableRow>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:layout_marginBottom="4dp"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/textView3"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="X:"
+                                android:textColor="@android:color/white"
+                                android:textSize="18sp" />
+
+                            <TextView
+                                android:id="@+id/textView4"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Y:"
+                                android:textColor="@android:color/white"
+                                android:textSize="18sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_marginStart="8dp"
+                                android:id="@+id/accelXTextView"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/raw_sensor_unit"
+                                android:textAlignment="textStart"
+                                android:textColor="@android:color/white"
+                                android:textSize="18sp" />
+
+                            <TextView
+                                android:layout_marginStart="8dp"
+                                android:id="@+id/accelYTextView"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/raw_sensor_unit"
+                                android:textAlignment="textStart"
+                                android:textColor="@android:color/white"
+                                android:textSize="18sp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp"
+                app:cardBackgroundColor="@color/colorPrimary"
+                app:cardCornerRadius="8dp"
+                app:contentPadding="8dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -104,124 +216,11 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginStart="6dp"
-                android:layout_marginEnd="6dp"
-                app:cardBackgroundColor="@color/colorPrimary"
-                app:cardCornerRadius="8dp"
-                app:contentPadding="2dp">
-
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TableRow
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <TextView
-                            android:id="@+id/editText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_column="0"
-                            android:layout_marginStart="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_marginEnd="4dp"
-                            android:text="Sensors"
-                            android:textColor="@android:color/white"
-                            android:textSize="18sp" />
-
-                        <Switch
-                            android:id="@+id/accelSwitch"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_column="1"
-                            android:layout_marginTop="4dp"
-                            android:layout_marginEnd="4dp"
-                            android:layout_marginBottom="4dp"
-                            android:checked="true"
-                            android:text="Raw"
-                            android:textAlignment="textEnd"
-                            android:textColor="@android:color/white"
-                            android:textSize="17sp" />
-
-                    </TableRow>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:layout_marginEnd="4dp"
-                        android:layout_marginBottom="4dp"
-                        android:orientation="horizontal">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/textView3"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="X:"
-                                android:textColor="@android:color/white"
-                                android:textSize="18sp" />
-
-                            <TextView
-                                android:id="@+id/textView4"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Y:"
-                                android:textColor="@android:color/white"
-                                android:textSize="18sp" />
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_marginStart="8dp"
-                                android:id="@+id/accelXTextView"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="@string/raw_sensor_unit"
-                                android:textAlignment="textStart"
-                                android:textColor="@android:color/white"
-                                android:textSize="18sp" />
-
-                            <TextView
-                                android:layout_marginStart="8dp"
-                                android:id="@+id/accelYTextView"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="@string/raw_sensor_unit"
-                                android:textAlignment="textStart"
-                                android:textColor="@android:color/white"
-                                android:textSize="18sp" />
-
-                        </LinearLayout>
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginStart="6dp"
                 android:layout_marginTop="6dp"
                 android:layout_marginEnd="6dp"
                 app:cardBackgroundColor="@color/colorPrimary"
                 app:cardCornerRadius="8dp"
-                app:contentPadding="2dp">
-
+                app:contentPadding="8dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -261,7 +260,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:layout_marginStart="8dp"
-                            android:text="Connected "
+                            android:text="Connected"
                             android:textAlignment="center"
                             android:textColor="@android:color/white"
                             android:textSize="18sp" />
@@ -435,7 +434,7 @@
                 android:layout_marginBottom="8dp"
                 app:cardBackgroundColor="@color/colorPrimary"
                 app:cardCornerRadius="8dp"
-                app:contentPadding="6dp">
+                app:contentPadding="8dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -451,12 +450,11 @@
                             android:layout_height="wrap_content"
                             android:text="Drive Speed Scale"
                             android:textColor="#FFFFFF"
-                            android:textSize="17sp"
-                            android:textStyle="bold" />
+                            android:textSize="17sp"/>
 
                         <EditText
                             android:id="@+id/driveSpeedScaleEditText"
-                            android:layout_width="180dp"
+                            android:layout_width="170dp"
                             android:layout_height="wrap_content"
                             android:ems="10"
                             android:inputType="numberDecimal"
@@ -475,12 +473,11 @@
                             android:layout_height="wrap_content"
                             android:text="Turning Speed Scale"
                             android:textColor="#FFFFFF"
-                            android:textSize="17sp"
-                            android:textStyle="bold" />
+                            android:textSize="17sp" />
 
                         <EditText
                             android:id="@+id/turningSpeedScaleEditText"
-                            android:layout_width="180dp"
+                            android:layout_width="170dp"
                             android:layout_height="wrap_content"
                             android:ems="10"
                             android:inputType="numberDecimal"
@@ -497,6 +494,91 @@
                         android:backgroundTint="@color/colorAccent"
                         android:layout_marginStart="5dp" />
 
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp"
+                app:cardBackgroundColor="@color/colorPrimary"
+                app:cardCornerRadius="8dp"
+                app:contentPadding="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:text="Packet Replays"
+                            android:textAlignment="center"
+                            android:gravity="center"
+                            android:textColor="@android:color/white"
+                            android:textSize="20sp" />
+
+                        <TextView
+                            android:id="@+id/currentRecordedPacketCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:text="Packets Recorded: 0 / MAX"
+                            android:textAlignment="center"
+                            android:gravity="center"
+                            android:textColor="@android:color/white"
+                            android:textSize="17sp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <Button
+                                android:id="@+id/startPacketReplayButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:backgroundTint="@color/colorAccent"
+                                android:textColor="@color/white"
+                                android:text="Record"
+                                android:textSize="14sp" />
+
+                            <Button
+                                android:layout_marginStart="4dp"
+                                android:id="@+id/stopPacketReplayButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:backgroundTint="@color/colorAccent"
+                                android:textColor="@color/white"
+                                android:text="Stop"
+                                android:textSize="14sp" />
+
+                            <Button
+                                android:layout_marginStart="4dp"
+                                android:id="@+id/savePacketReplayButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:backgroundTint="@color/colorAccent"
+                                android:textColor="@color/white"
+                                android:text="Save"
+                                android:textSize="14sp" />
+
+                            <Button
+                                android:id="@+id/viewPacketReplaysButton"
+                                android:layout_width="135dp"
+                                android:layout_height="match_parent"
+                                android:text="View Replays"
+                                android:textSize="13sp"
+                                android:backgroundTint="@color/colorAccent"
+                                android:layout_marginStart="4dp" />
+
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>

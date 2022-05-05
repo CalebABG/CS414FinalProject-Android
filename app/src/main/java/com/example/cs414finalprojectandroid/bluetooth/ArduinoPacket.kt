@@ -27,18 +27,17 @@ class ArduinoPacket {
                 .setCRC32()
                 .build()
         }
+
+        private fun addBytesToList(byteArray: ByteArray, mutableList: MutableList<Byte>) {
+            for (byte in byteArray) mutableList.add(byte)
+        }
     }
 
-    private var id: Short = 0x0
-    private var crc: Int = 0x0
-    private var ack: Byte = 0x1
-    private var dataLength: Short = 0x0
-    private var data: ByteArray = ByteArray(DATA_LENGTH.toInt())
-
-    private fun addBytesToList(byteArray: ByteArray, mutableList: MutableList<Byte>) {
-        for (byte in byteArray)
-            mutableList.add(byte)
-    }
+    var id: Short = 0x0
+    var crc: Int = 0x0
+    var ack: Byte = 0x1
+    var dataLength: Short = 0x0
+    var data: ByteArray = ByteArray(DATA_LENGTH.toInt())
 
     fun build(): ByteArray {
         val packet: MutableList<Byte> = mutableListOf()
@@ -60,7 +59,6 @@ class ArduinoPacket {
 
     fun setHeader(packetId: Short): ArduinoPacket {
         id = packetId
-
         return this
     }
 

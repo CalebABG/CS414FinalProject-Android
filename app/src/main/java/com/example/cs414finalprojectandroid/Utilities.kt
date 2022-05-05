@@ -50,6 +50,15 @@ object Utilities {
             .float
     }
 
+    fun <T> MutableList<T>.isFull(capacity: Int): Boolean {
+        return this.size >= capacity
+    }
+
+    fun Boolean.toByte(): Byte {
+        if (this) return 1
+        return 0
+    }
+
     fun map(value: Double, min1: Double, max1: Double, min2: Double, max2: Double): Double {
         return min2 + (max2 - min2) * ((value - min1) / (max1 - min1))
     }
