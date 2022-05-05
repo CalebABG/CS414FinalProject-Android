@@ -26,14 +26,14 @@ import com.example.cs414finalprojectandroid.Utilities.toByteArray
 import com.example.cs414finalprojectandroid.Utilities.toHex
 import com.example.cs414finalprojectandroid.bluetooth.ArduinoPacket
 import com.example.cs414finalprojectandroid.bluetooth.BluetoothService
-import com.example.cs414finalprojectandroid.settings.AccelerometerCalibration
+import com.example.cs414finalprojectandroid.settings.AppSettings
 import com.google.gson.Gson
 import io.paperdb.Paper
 import kotlinx.android.synthetic.main.activity_control.*
 import java.lang.ref.WeakReference
 import java.util.*
 
-class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDialogFragment.PacketReplayDialogListener {
+class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDialogListener {
     companion object {
         var PARENTAL_OVERRIDE: Boolean = false
 
@@ -42,10 +42,10 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
         const val MIN_MOTOR_VAL = -UBYTE_MAX
         const val MAX_MOTOR_VAL = UBYTE_MAX
 
-        var accelCalib = AccelerometerCalibration()
+        var appSettings = AppSettings()
 
         const val SHARED_PREF_FILE_NAME = "CS414FinalProject"
-        const val SHARED_PREF_CALIB_KEY = "calibration"
+        const val SHARED_PREF_APP_SETTINGS_KEY = "calibration"
 
         // TODO: Save Drive Parameters to SharedPreferences
 
@@ -99,43 +99,48 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
-        if (!bluetoothService.isConnected) connectToBluetooth()
+        // TODO: Keep commented?
+//        if (!bluetoothService.isConnected) connectToBluetooth()
 
         setDriveParametersButton.setOnClickListener { sendDriveParameters() }
-        saveAccelCalibrationButton.setOnClickListener { saveAccelCalibrationToSharedPreferences() }
-        loadAccelCalibrationButton.setOnClickListener { loadAccelCalibrationFromSharedPreferences() }
-        resetAccelCalibrationButton.setOnClickListener { resetAccelCalibration() }
         accelSwitch.setOnClickListener { updateSensorInfoText() }
 
         // TODO: Move inside logic to helper methods
         startPacketReplayButton.setOnClickListener {
-            if (packetReplayCaptureDone()) {
-                showToast(this, "Recording limit reached or manually stopped, please save or discard")
-            }
-            else if (packetReplayStatus == PacketReplayStatus.Started) {
-                showToast(this, "Recording already started")
-            }
-            else {
-                packetReplayStatus = PacketReplayStatus.Started
-                showToast(this, "Recording started")
+            when {
+                packetReplayCaptureDone() -> {
+                    showToast(this, "Recording limit reached or manually stopped, please save or discard")
+                }
+                packetReplayStatus == PacketReplayStatus.Started -> {
+                    showToast(this, "Recording already started")
+                }
+                else -> {
+                    packetReplayStatus = PacketReplayStatus.Started
+                    showToast(this, "Recording started")
+                }
             }
         }
 
         stopPacketReplayButton.setOnClickListener {
-            if (packetReplayCaptureDone()) {
-                showToast(this, "Recording already stopped, please save or discard")
-            }
-            else if (packetReplayStatus == PacketReplayStatus.None){
-                showToast(this, "Recording not started yet, please start first")
-            }
-            else {
-                packetReplayStatus = PacketReplayStatus.Canceled
-                showToast(this, "Stopping recording")
+            when {
+                packetReplayCaptureDone() -> {
+                    showToast(this, "Recording already stopped, please save or discard")
+                }
+                packetReplayStatus == PacketReplayStatus.None -> {
+                    showToast(this, "Recording not started yet, please start first")
+                }
+                else -> {
+                    packetReplayStatus = PacketReplayStatus.Canceled
+                    showToast(this, "Stopping recording")
+                }
             }
         }
 
         savePacketReplayButton.setOnClickListener {
-            if (!packetReplayCaptureDone()) {
+            if (packetReplayStatus == PacketReplayStatus.None) {
+                showToast(this, "Recording not started, please start first")
+            }
+            else if (!packetReplayCaptureDone()) {
                 showToast(this, "Recording not stopped, please stop first")
             } else {
                 if (packetReplayList.isEmpty()) {
@@ -180,7 +185,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
 
         emergencyStopBtn.setOnClickListener {
             if (bluetoothService.isConnected) {
-                showToast(this, "Stopping Motors!")
+                showToast(this, "Stopping Motors")
                 val packet = ArduinoPacket.create(ArduinoPacket.STOP_MOTORS_PACKET_ID)
                 bluetoothService.write(packet)
             } else showToast(this, "Not Connected")
@@ -205,15 +210,22 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
 
     override fun onPause() {
         sensorManager.unregisterListener(this)
+        saveAppSettingsToSharedPreferences()
         super.onPause()
     }
 
     override fun onResume() {
         super.onResume()
-        loadAccelCalibrationFromSharedPreferences()
+        loadAppSettingsFromSharedPreferences()
+        updateDriveParametersFromAppSettings()
 
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI, 1000)
         bluetoothService.start()
+    }
+
+    private fun updateDriveParametersFromAppSettings() {
+        driveSpeedScaleEditText.setText(appSettings.driveSpeedScale.toString())
+        turningSpeedScaleEditText.setText(appSettings.turnSpeedScale.toString())
     }
 
     override fun onDestroy() {
@@ -230,32 +242,33 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
             .setPositiveButton("Yes") { _, _ -> finish() }
             .setNegativeButton("No", null)
             .setMessage("Confirm exit?")
-            .setTitle(R.string.app_name)
             .show()
     }
 
-    private fun getSavedAccelCalibration(): AccelerometerCalibration {
-        val savedCalibrationString = getAppSharedPreferences(this).getString(SHARED_PREF_CALIB_KEY, "") ?: ""
-        return if (savedCalibrationString.isNotEmpty()) gson.fromJson(savedCalibrationString, AccelerometerCalibration::class.java)
-        else AccelerometerCalibration()
+    private fun getSavedAppSettings(): AppSettings {
+        val appSettingsString = getAppSharedPreferences(this).getString(SHARED_PREF_APP_SETTINGS_KEY, "") ?: ""
+        return if (appSettingsString.isNotEmpty()) gson.fromJson(appSettingsString, AppSettings::class.java)
+        else AppSettings()
     }
 
-    private fun saveAccelCalibrationToSharedPreferences() {
+    private fun saveAppSettingsToSharedPreferences() {
         val sharedPreferences = getAppSharedPreferences(this)
         val editor = sharedPreferences.edit()
 
-        val todoListJson = gson.toJson(accelCalib)
-        editor.putString(SHARED_PREF_CALIB_KEY, todoListJson)
+        val driveSpeedScaleFloat = driveSpeedScaleEditText.text.toString().toFloatOrNull()
+        val turnSpeedScaleFloat = turningSpeedScaleEditText.text.toString().toFloatOrNull()
+
+        if (driveSpeedScaleFloat != null) appSettings.driveSpeedScale = driveSpeedScaleFloat
+        if (turnSpeedScaleFloat != null) appSettings.turnSpeedScale = turnSpeedScaleFloat
+
+        val appSettingsJson = gson.toJson(appSettings)
+        editor.putString(SHARED_PREF_APP_SETTINGS_KEY, appSettingsJson)
 
         editor.apply()
     }
 
-    private fun loadAccelCalibrationFromSharedPreferences() {
-        accelCalib = getSavedAccelCalibration()
-    }
-
-    private fun resetAccelCalibration() {
-        accelCalib.reset()
+    private fun loadAppSettingsFromSharedPreferences() {
+        appSettings = getSavedAppSettings()
     }
 
     private fun connectToBluetooth() {
@@ -294,25 +307,29 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
     }
 
     private fun sendDriveParameters() {
-        val driveSpeedScaleText = driveSpeedScaleEditText.text.toString()
-        val turningSpeedScaleText = turningSpeedScaleEditText.text.toString()
+        if (!bluetoothService.isConnected) {
+            showToast(this, "Bluetooth not connected, please connect first")
+        } else {
+            val driveSpeedScaleText = driveSpeedScaleEditText.text.toString()
+            val turningSpeedScaleText = turningSpeedScaleEditText.text.toString()
 
-        if (driveSpeedScaleText.isEmpty() || turningSpeedScaleText.isEmpty())
-            showToast(this, "Please make sure both parameters are not Empty")
-        else {
-            val driveSpeedScaleFloat = driveSpeedScaleText.toFloatOrNull()
-            val turningSpeedScaleFloat = turningSpeedScaleText.toFloatOrNull()
+            if (driveSpeedScaleText.isEmpty() || turningSpeedScaleText.isEmpty()) {
+                showToast(this, "Please make sure both parameters are not Empty")
+            } else {
+                val driveSpeedScaleFloat = driveSpeedScaleText.toFloatOrNull()
+                val turningSpeedScaleFloat = turningSpeedScaleText.toFloatOrNull()
 
-            if (driveSpeedScaleFloat == null || turningSpeedScaleFloat == null)
-                showToast(this, "Please make sure both parameters are valid Floats")
-            else {
-                val driveSpeedScaleBytes = driveSpeedScaleFloat.toByteArray()
-                val turningSpeedScaleBytes = turningSpeedScaleFloat.toByteArray()
+                if (driveSpeedScaleFloat == null || turningSpeedScaleFloat == null)
+                    showToast(this, "Please make sure both parameters are valid Floats")
+                else {
+                    val driveSpeedScaleBytes = driveSpeedScaleFloat.toByteArray()
+                    val turningSpeedScaleBytes = turningSpeedScaleFloat.toByteArray()
 
-                val packetData = driveSpeedScaleBytes + turningSpeedScaleBytes
+                    val packetData = driveSpeedScaleBytes + turningSpeedScaleBytes
 
-                val packet = ArduinoPacket.create(ArduinoPacket.DRIVE_PARAMETERS_ID, packetData)
-                bluetoothService.write(packet)
+                    val packet = ArduinoPacket.create(ArduinoPacket.DRIVE_PARAMETERS_ID, packetData)
+                    bluetoothService.write(packet)
+                }
             }
         }
     }
@@ -348,45 +365,22 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
 
-    private fun setCalibrationX(value: Int) {
-        if (value < accelCalib.minX) accelCalib.minX = value
-        if (value > accelCalib.maxX) accelCalib.maxX = value
-    }
-
-    private fun setCalibrationY(value: Int) {
-        if (value < accelCalib.minY) accelCalib.minY = value
-        if (value > accelCalib.maxY) accelCalib.maxY = value
-    }
-
-    @SuppressLint("SetTextI18n")
     override fun onSensorChanged(event: SensorEvent) {
         val accelX: Float = event.values[0]
         val accelY: Float = event.values[1]
 
-        if (!freezeAccelCalibrationSwitch.isChecked) {
-            setCalibrationX(accelX.toInt())
-            setCalibrationY(accelY.toInt())
-        }
-
-        accelMinXTextView.text = "Accel Min X: ${accelCalib.minX}"
-        accelMinYTextView.text = "Accel Min Y: ${accelCalib.minY}"
-        accelMaxXTextView.text = "Accel Max X: ${accelCalib.maxX}"
-        accelMaxYTextView.text = "Accel Max Y: ${accelCalib.maxY}"
-
         val multiplierX = UBYTE_MAX / GRAV_ACCEL
         val multiplierY = UBYTE_MAX / GRAV_ACCEL
 
-        val calcAccelX =
-            constrain(accelX * multiplierX, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt().toShort()
-        val calcAccelY =
-            constrain(accelY * multiplierY, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt().toShort()
+        val calcAccelX = constrain(accelX * multiplierX, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt().toShort()
+        val calcAccelY = constrain(accelY * multiplierY, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt().toShort()
 
         if (accelSwitch.isChecked) {
             accelXTextView.text = "$calcAccelX"
             accelYTextView.text = "$calcAccelY"
         } else {
-            accelXTextView.text = "${"%.3f".format(accelX)} m/s\u00B2"
-            accelYTextView.text = "${"%.3f".format(accelY)} m/s\u00B2"
+            accelXTextView.text = "%.3fm/s²".format(accelX)
+            accelYTextView.text = "%.3fm/s²".format(accelY)
         }
 
         if (PARENTAL_OVERRIDE) {

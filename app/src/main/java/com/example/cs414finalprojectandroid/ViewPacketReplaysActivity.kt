@@ -29,7 +29,7 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
 
         packetReplayListView.choiceMode = ListView.CHOICE_MODE_SINGLE
 
-        packetReplayAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_single_choice, packetReplayList)
+        packetReplayAdapter = ArrayAdapter(this, R.layout.simple_list_item_single_choice_white_text, packetReplayList)
         packetReplayListView.adapter = packetReplayAdapter
 
         packetReplayListView.setOnItemClickListener { parent, view, position, id ->
@@ -99,16 +99,10 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
             if (packetReplayList.isEmpty()) showToast(this, "No Replays to delete")
             else {
                 if (selectedPacketIndexIsValid()) {
-                    val selectedItem = packetReplayList[selectedPacketReplayIndex]
-                    removeReplay(selectedPacketReplayIndex)
-                    showToast(this, "Deleted Replay: $selectedItem")
+                    showDeleteReplayDialog()
                 }
             }
         }
-    }
-
-    override fun onBackPressed() {
-        showExitDialog()
     }
 
     override fun onDestroy() {
@@ -116,12 +110,18 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun showExitDialog() {
+    private fun showDeleteReplayDialog() {
         AlertDialog.Builder(this)
-            .setPositiveButton("Yes") { _, _ -> finish() }
-            .setNegativeButton("No", null)
-            .setMessage("Confirm exit?")
+            .setPositiveButton("Yes") { _, _ -> deletePacketReplay() }
+            .setNegativeButton("Cancel", null)
+            .setMessage("Confirm delete?")
             .show()
+    }
+
+    private fun deletePacketReplay() {
+        val selectedItem = packetReplayList[selectedPacketReplayIndex]
+        removeReplay(selectedPacketReplayIndex)
+        showToast(this, "Deleted Replay: $selectedItem")
     }
 
     private fun selectedPacketIndexIsValid(): Boolean {

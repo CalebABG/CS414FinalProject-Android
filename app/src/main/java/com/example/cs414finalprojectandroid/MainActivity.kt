@@ -29,12 +29,12 @@ Project Points (8):
 
 DONE 1 - Use of SharedPreferences for persisting Min/Max sensor config
 DONE 1 - Use of Android service that requires user-granted permissions (Bluetooth + Location)
+DONE 1 - Use of three or more Activities
 1 - Use of Notifications (local notification - app put in background, de-register accelerometer listener) / safety if bluetooth connected
 2 - Use of Broadcast Receiver Services
-// CANNOT DO IN TIME 2 - Use of SQLite database (store sent packets, can use to replay motion)
+2 - Use of SQLite database (store sent packets, can use to replay motion)
 DONE 2 - Use of at least one device sensor (Accelerometer)
 DONE 2 - Use of a REST-ful HTTP API [Retrofit] (Use for Start screen photo) - look at `Lorem Picsum`: https://picsum.photos/
-1 - Use of three or more Activities
 */
 
 class MainActivity : AppCompatActivity() {
@@ -93,8 +93,7 @@ class MainActivity : AppCompatActivity() {
         call.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (bitmap == null) {
-                    val body = response.body()
-                    val bytes = body!!.bytes()
+                    val bytes = response.body()!!.bytes()
                     bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                 }
 
@@ -103,14 +102,14 @@ class MainActivity : AppCompatActivity() {
 
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                 mainScreenImage.setImageResource(R.mipmap.ic_electric_car_round)
-                showToast(this@MainActivity, "Could not fetch LoremPics Image :(")
+                showToast(this@MainActivity, "Could not fetch from LoremPics")
             }
         })
     }
 
     private fun startCarControlActivity() {
         if (bluetoothAdapter == null) {
-            showToast(this, "Bluetooth is not available", Toast.LENGTH_LONG)
+            showToast(this, "Bluetooth is not available")
         } else {
             if (hasPermissions(this, PERMISSIONS)) {
                 gotoCarControl()
@@ -173,7 +172,7 @@ class MainActivity : AppCompatActivity() {
                     if (canShowRequestPermissionsRationale()) {
                         showRequestPermissionsDialog()
                     } else {
-                        showToast(this, "Go to settings and enable permissions", Toast.LENGTH_LONG)
+                        showToast(this, "Go to settings and enable permissions")
                     }
                 }
             }

@@ -187,7 +187,7 @@ public class BluetoothService {
         // Send a failure message back to the Activity
         Message toastMsg = handler.obtainMessage(Constants.MESSAGE_TOAST);
         Bundle toastBundle = new Bundle();
-        toastBundle.putString(Constants.TOAST, "Connected!");
+        toastBundle.putString(Constants.TOAST, "Connected");
         toastMsg.setData(toastBundle);
         handler.sendMessage(toastMsg);
 
