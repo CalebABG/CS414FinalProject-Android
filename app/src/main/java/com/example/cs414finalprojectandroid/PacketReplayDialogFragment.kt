@@ -41,11 +41,6 @@ class PacketReplayDialogFragment : DialogFragment() {
 
     private lateinit var listener: PacketReplayDialogListener
 
-    interface PacketReplayDialogListener {
-        fun onDialogPositiveClick(dialog: DialogFragment)
-        fun onDialogNegativeClick(dialog: DialogFragment)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -84,6 +79,7 @@ class PacketReplayDialogFragment : DialogFragment() {
             val view = inflater.inflate(R.layout.fragment_packet_replay_dialog, null)
 
             view.textView6.text = "Packets Recorded: $packetsRecordedStr / $maxNumPacketsStr"
+
             view.saveButton.setOnClickListener {
                 requireArguments().putString(ARG_REPLAY_NAME, getReplayName(requireDialog().findViewById(R.id.replayNameEditText)))
                 listener.onDialogPositiveClick(this)

@@ -150,6 +150,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
 
         viewPacketReplaysButton.setOnClickListener {
             val replays = Paper.book(PAPER_COLLECTION_NAME).allKeys
+
             if (replays.isNullOrEmpty()) {
                 showToast(this, "No replays saved yet, save some first")
             }

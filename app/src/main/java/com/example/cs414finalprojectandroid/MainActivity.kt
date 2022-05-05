@@ -136,16 +136,18 @@ class MainActivity : AppCompatActivity() {
         ActivityCompat.requestPermissions(this, PERMISSIONS.toTypedArray(), REQUEST_ENABLE_BT)
     }
 
-    private fun canShowRequestPermissionsRationale() =
-        ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.BLUETOOTH) ||
+    private fun canShowRequestPermissionsRationale(): Boolean {
+        return ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.BLUETOOTH) ||
                 ActivityCompat.shouldShowRequestPermissionRationale(
                     this,
                     Manifest.permission.ACCESS_FINE_LOCATION
                 )
+    }
 
-    private fun neededPermissionsGranted(perms: MutableMap<String, Int>) =
-        perms[Manifest.permission.BLUETOOTH] == PackageManager.PERMISSION_GRANTED &&
+    private fun neededPermissionsGranted(perms: MutableMap<String, Int>): Boolean {
+        return perms[Manifest.permission.BLUETOOTH] == PackageManager.PERMISSION_GRANTED &&
                 perms[Manifest.permission.ACCESS_FINE_LOCATION] == PackageManager.PERMISSION_GRANTED
+    }
 
     private fun showRequestPermissionsDialog() {
         AlertDialog.Builder(this)

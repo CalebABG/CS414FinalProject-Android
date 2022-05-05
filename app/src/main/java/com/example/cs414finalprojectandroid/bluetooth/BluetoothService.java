@@ -1,7 +1,3 @@
-/*
- * Adapted from: https://github.com/googlearchive/android-BluetoothChat
- */
-
 package com.example.cs414finalprojectandroid.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
@@ -20,6 +16,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
+/*
+ * Adapted from: https://github.com/googlearchive/android-BluetoothChat
+ */
 public class BluetoothService {
     private static final String TAG = "BluetoothService";
 
@@ -469,7 +468,7 @@ public class BluetoothService {
             Log.i(TAG, "BEGIN mConnectedThread");
 
             // Keep listening to the InputStream while connected
-            while (BluetoothService.this.getState() == STATE_CONNECTED) {
+            while (bluetoothSocket.isConnected() && BluetoothService.this.getState() == STATE_CONNECTED) {
                 try {
                     // Read from the InputStream
                     // if the buffer is available and has anything in it
@@ -565,9 +564,10 @@ public class BluetoothService {
                                 break;
                         }
                     }
-                } catch (IOException e) {
-                    Log.e(TAG, "disconnected: " + e.getMessage());
+                } catch (Exception e) {
                     connectionLost();
+                    cancel();
+                    Log.e(TAG, "Bluetooth Socket Exception: " + e.getMessage());
                     break;
                 }
             }

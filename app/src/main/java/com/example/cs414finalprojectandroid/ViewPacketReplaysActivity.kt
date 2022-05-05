@@ -1,10 +1,13 @@
 package com.example.cs414finalprojectandroid
 
+import android.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.ListView
+import com.example.cs414finalprojectandroid.Utilities.hexToByteArray
 import com.example.cs414finalprojectandroid.Utilities.showToast
 import io.paperdb.Paper
 import kotlinx.android.synthetic.main.activity_view_packet_replays.*
@@ -12,13 +15,11 @@ import kotlinx.android.synthetic.main.activity_view_packet_replays.*
 class ViewPacketReplaysActivity : AppCompatActivity() {
     private var selectedPacketReplayIndex: Int = -1
 
-    private val packetReplayList: MutableList<String> = mutableListOf()
-    private lateinit var packetReplayAdapter: ArrayAdapter<String>
-
-    // TODO: save thread to state variable and cancel/stop thread on back button press
     private var packetReplayThread: Thread? = null
+    private val packetReplayList: MutableList<String> = mutableListOf()
 
     private var packetReplayStatus = PacketReplayStatus.Stopped
+    private lateinit var packetReplayAdapter: ArrayAdapter<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,11 +34,11 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
 
         packetReplayListView.setOnItemClickListener { parent, view, position, id ->
             selectedPacketReplayIndex = position
-            true
         }
 
         stopReplayButton.setOnClickListener {
-            if (packetReplayStatus == PacketReplayStatus.Canceled || packetReplayStatus == PacketReplayStatus.Stopped) {
+            if (packetReplayStatus == PacketReplayStatus.Canceled ||
+                packetReplayStatus == PacketReplayStatus.Stopped) {
                 showToast(this, "Replay cancellation in progress or never started")
             }
             else {
@@ -47,13 +48,11 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
 
         sendReplayButton.setOnClickListener {
             if (packetReplayStatus == PacketReplayStatus.Started) {
-                showToast(this, "Replay Send already started")
-            }
-            else {
+                showToast(this, "Replay send already started")
+            } else {
                 if (!ControlActivity.bluetoothService.isConnected) {
                     showToast(this, "Bluetooth not connected, please connect first")
-                }
-                else {
+                } else {
                     if (selectedPacketIndexIsValid()) {
                         packetReplayStatus = PacketReplayStatus.Started
                         setReplayStatusTextViewVisible(true)
@@ -70,15 +69,11 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
                                         break
                                     }
 
-                                    val packet = replayPackets[i]
-                                    val packetBytes = packet
-                                        .chunked(2)
-                                        .map { it.toInt(16).toByte() }
-                                        .toByteArray()
+                                    val packetBytes = replayPackets[i].hexToByteArray()
 
                                     ControlActivity.bluetoothService.write(packetBytes)
 
-                                    updateReplayStatusTextView(i+1, replayPackets.size)
+                                    updateReplayStatusTextView(i + 1, replayPackets.size)
 
                                     // Sync with SENSOR_DELAY_UI delay
                                     Thread.sleep(60)
@@ -86,16 +81,15 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
 
                                 resetReplaySendState()
                             } catch (interruptedException: InterruptedException) {
-                                // TODO: Log error
-                            } catch (exception: Exception){
-                                // TODO: Log general exception?
+                                Log.e(Constants.TAG, interruptedException.stackTraceToString())
+                            } catch (exception: Exception) {
+                                Log.e(Constants.TAG, exception.stackTraceToString())
                             }
                         }
 
                         packetReplayThread?.start()
-                    }
-                    else {
-                        showToast(this, "No Relay selected, please select one first")
+                    } else {
+                        showToast(this, "No Replay selected, please select one first")
                     }
                 }
             }
@@ -113,11 +107,21 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        showExitDialog()
+    }
+
     override fun onDestroy() {
-        if (packetReplayThread != null) {
-            packetReplayThread!!.interrupt()
-        }
+        packetReplayThread?.interrupt()
         super.onDestroy()
+    }
+
+    private fun showExitDialog() {
+        AlertDialog.Builder(this)
+            .setPositiveButton("Yes") { _, _ -> finish() }
+            .setNegativeButton("No", null)
+            .setMessage("Confirm exit?")
+            .show()
     }
 
     private fun selectedPacketIndexIsValid(): Boolean {
@@ -126,22 +130,18 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
 
     private fun updateReplayStatusTextView(packetNumber: Int, numPackets: Int) {
         val format = "Sending Packet $packetNumber / $numPackets"
-        runOnUiThread {
-            replayStatusTextView.text = format
-        }
+        runOnUiThread { replayStatusTextView.text = format }
     }
 
-    fun resetReplaySendState() {
+    private fun resetReplaySendState() {
         packetReplayStatus = PacketReplayStatus.Stopped
         setReplayStatusTextViewVisible(false)
-        updateReplayStatusTextView(0,0)
+        updateReplayStatusTextView(0, 0)
     }
 
-    fun setReplayStatusTextViewVisible(status: Boolean) {
-        runOnUiThread {
-            if (status) replayStatusTextView.visibility = View.VISIBLE
-            else replayStatusTextView.visibility = View.INVISIBLE
-        }
+    private fun setReplayStatusTextViewVisible(visible: Boolean) {
+        val visibility = if (visible) View.VISIBLE else View.INVISIBLE
+        runOnUiThread { replayStatusTextView.visibility = visibility }
     }
 
     override fun onResume() {
