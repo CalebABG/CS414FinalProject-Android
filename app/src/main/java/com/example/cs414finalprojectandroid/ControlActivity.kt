@@ -69,16 +69,6 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
     private lateinit var sensorManager: SensorManager
     private lateinit var bluetoothMessageHandler: BluetoothMessageHandler
 
-    private fun packetReplayCaptureDone() : Boolean {
-        return packetReplayStatus == PacketReplayStatus.Stopped ||
-        return packetReplayStatus == PacketReplayStatus.Canceled ||
-                packetReplayList.isFull(REPLAY_LIST_SIZE)
-    }
-
-    private fun updatePacketsRecordedText() {
-        currentRecordedPacketCount.text = "Packets Recorded: ${packetReplayList.size} / $REPLAY_LIST_SIZE"
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_control)
@@ -161,7 +151,6 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
 
         parentalOverrideBtn.setOnClickListener {
             toggleParentalOverride()
-            updateShieldIconColor()
 
             if (bluetoothService.isConnected) {
                 if (appSettings.parentalOverride) {
@@ -214,11 +203,6 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
 
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI, 1000)
         bluetoothService.start()
-    }
-
-    private fun updateDriveParametersFromAppSettings() {
-        driveSpeedScaleEditText.setText(appSettings.driveSpeedScale.toString())
-        turningSpeedScaleEditText.setText(appSettings.turnSpeedScale.toString())
     }
 
     override fun onDestroy() {
@@ -283,6 +267,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
 
     private fun toggleParentalOverride() {
         appSettings.toggleParentalOverride()
+        updateShieldIconColor()
     }
 
     private fun updateShieldIconColor() {
@@ -297,6 +282,11 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
 
     private fun updateSensorInfoText() {
         accelSwitch.text = if (accelSwitch.isChecked) "Calc" else "Raw"
+    }
+
+    private fun updateDriveParametersFromAppSettings() {
+        driveSpeedScaleEditText.setText(appSettings.driveSpeedScale.toString())
+        turningSpeedScaleEditText.setText(appSettings.turnSpeedScale.toString())
     }
 
     private fun sendDriveParameters() {
@@ -326,6 +316,16 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
                 }
             }
         }
+    }
+
+    private fun packetReplayCaptureDone() : Boolean {
+        return packetReplayStatus == PacketReplayStatus.Stopped ||
+                packetReplayStatus == PacketReplayStatus.Canceled ||
+                packetReplayList.isFull(REPLAY_LIST_SIZE)
+    }
+
+    private fun updatePacketsRecordedText() {
+        currentRecordedPacketCount.text = "Packets Recorded: ${packetReplayList.size} / $REPLAY_LIST_SIZE"
     }
 
     private fun resetPacketReplayState() {
