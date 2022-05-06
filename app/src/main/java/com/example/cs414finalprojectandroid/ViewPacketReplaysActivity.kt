@@ -61,8 +61,7 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
 
                         packetReplayThread = Thread {
                             try {
-                                val replayPackets = Paper
-                                    .book(ControlActivity.REPLAY_COLLECTION_NAME)
+                                val replayPackets = getReplayBook()
                                     .read<List<String>>(packetReplayList[selectedPacketReplayIndex])!!
 
                                 for (i in replayPackets.indices) {
@@ -83,9 +82,9 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
 
                                 resetReplaySendState()
                             } catch (interruptedException: InterruptedException) {
-                                Log.e(Constants.TAG, interruptedException.stackTraceToString())
+                                Log.e(Constants.TAG, interruptedException.message?: "Thread Interrupted in Replay playback")
                             } catch (exception: Exception) {
-                                Log.e(Constants.TAG, exception.stackTraceToString())
+                                Log.e(Constants.TAG, exception.message ?: "Exception in Replay playback")
                             }
                         }
 
