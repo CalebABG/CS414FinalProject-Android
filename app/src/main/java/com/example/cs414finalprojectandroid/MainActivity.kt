@@ -72,6 +72,32 @@ class MainActivity : AppCompatActivity() {
         setScreenLoremPicsImage()
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == PERMISSIONS_REQUEST_CODE) {
+            if (grantResults.isNotEmpty()) {
+                for (i in permissions.indices) {
+                    permissionsMap[permissions[i]] = grantResults[i]
+                }
+
+                if (neededPermissionsGranted()) {
+                    gotoCarControl()
+                } else {
+                    if (canShowRequestPermissionsRationale()) {
+                        showRequestPermissionsDialog()
+                    } else {
+                        showToast(this, "Please go to Settings and enable permissions")
+                    }
+                }
+            }
+        }
+    }
+
     private fun setScreenLoremPicsImage() {
         val picSize = 350
         loremPicsService
@@ -159,31 +185,5 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Yes") { _, _ -> requestNeededAppPermissions() }
             .setNegativeButton("No", null)
             .show()
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if (requestCode == PERMISSIONS_REQUEST_CODE) {
-            if (grantResults.isNotEmpty()) {
-                for (i in permissions.indices) {
-                    permissionsMap[permissions[i]] = grantResults[i]
-                }
-
-                if (neededPermissionsGranted()) {
-                    gotoCarControl()
-                } else {
-                    if (canShowRequestPermissionsRationale()) {
-                        showRequestPermissionsDialog()
-                    } else {
-                        showToast(this, "Please go to Settings and enable permissions")
-                    }
-                }
-            }
-        }
     }
 }

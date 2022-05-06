@@ -63,15 +63,6 @@ class PacketReplayDialogFragment : DialogFragment() {
         }
     }
 
-    private fun getReplayName(editText: EditText): String {
-        var replayName = editText.text.toString().trim()
-
-        if (replayName.isEmpty())
-            replayName = "replay_${dateTimeFormatter.format(Instant.now())}"
-
-        return replayName
-    }
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
             val builder = AlertDialog.Builder(it)
@@ -104,5 +95,14 @@ class PacketReplayDialogFragment : DialogFragment() {
 
             return dialog
         } ?: throw IllegalStateException("Activity cannot be null")
+    }
+
+    private fun getReplayName(editText: EditText): String {
+        var replayName = editText.text.toString().trim()
+
+        if (replayName.isEmpty())
+            replayName = "replay_${dateTimeFormatter.format(Instant.now())}"
+
+        return replayName
     }
 }
