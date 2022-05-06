@@ -1,4 +1,4 @@
-package com.example.cs414finalprojectandroid
+package com.example.cs414finalprojectandroid.replays
 
 import android.app.Dialog
 import android.content.Context
@@ -6,12 +6,13 @@ import android.os.Bundle
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import com.example.cs414finalprojectandroid.R
 import kotlinx.android.synthetic.main.fragment_packet_replay_dialog.view.*
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-/**
+/*
  * Reference: https://developer.android.com/guide/topics/ui/dialogs
  */
 class PacketReplayDialogFragment : DialogFragment() {
@@ -81,7 +82,10 @@ class PacketReplayDialogFragment : DialogFragment() {
             view.textView6.text = "Packets Recorded: $packetsRecordedStr / $maxNumPacketsStr"
 
             view.saveButton.setOnClickListener {
-                requireArguments().putString(ARG_REPLAY_NAME, getReplayName(requireDialog().findViewById(R.id.replayNameEditText)))
+                requireArguments().putString(
+                    ARG_REPLAY_NAME, getReplayName(requireDialog().findViewById(
+                        R.id.replayNameEditText
+                    )))
                 listener.onDialogPositiveClick(this)
                 dismiss()
             }

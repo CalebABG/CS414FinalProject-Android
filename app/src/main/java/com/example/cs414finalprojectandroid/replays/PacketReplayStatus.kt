@@ -1,4 +1,4 @@
-package com.example.cs414finalprojectandroid
+package com.example.cs414finalprojectandroid.replays
 
 enum class PacketReplayStatus {
     None,

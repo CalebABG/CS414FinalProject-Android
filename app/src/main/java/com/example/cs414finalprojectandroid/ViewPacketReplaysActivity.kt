@@ -7,8 +7,10 @@ import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.ListView
+import com.example.cs414finalprojectandroid.Utilities.getReplayBook
 import com.example.cs414finalprojectandroid.Utilities.hexToByteArray
 import com.example.cs414finalprojectandroid.Utilities.showToast
+import com.example.cs414finalprojectandroid.replays.PacketReplayStatus
 import io.paperdb.Paper
 import kotlinx.android.synthetic.main.activity_view_packet_replays.*
 
@@ -60,7 +62,7 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
                         packetReplayThread = Thread {
                             try {
                                 val replayPackets = Paper
-                                    .book(ControlActivity.PAPER_COLLECTION_NAME)
+                                    .book(ControlActivity.REPLAY_COLLECTION_NAME)
                                     .read<List<String>>(packetReplayList[selectedPacketReplayIndex])!!
 
                                 for (i in replayPackets.indices) {
@@ -150,13 +152,13 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
     }
 
     private fun removeReplay(index: Int) {
-        Paper.book(ControlActivity.PAPER_COLLECTION_NAME).delete(packetReplayList[index])
+        getReplayBook().delete(packetReplayList[index])
         packetReplayList.removeAt(index)
         packetReplayAdapter.notifyDataSetChanged()
     }
 
     private fun loadSavedReplays() {
-        val replays = Paper.book(ControlActivity.PAPER_COLLECTION_NAME).allKeys
+        val replays = getReplayBook().allKeys
         packetReplayList.clear()
         packetReplayList.addAll(replays)
         packetReplayAdapter.notifyDataSetChanged()

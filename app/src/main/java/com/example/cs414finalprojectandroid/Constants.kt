@@ -9,6 +9,11 @@ package com.example.cs414finalprojectandroid
 object Constants {
     const val TAG = "CS414FinalProject"
 
+    const val LOREM_PICSUM_URL = "https://picsum.photos/"
+
+    const val ACTIVE_SHIELD_COLOR = "#32A341"
+    const val INACTIVE_SHIELD_COLOR = "#AEB1AE"
+
     // Blue-Smirf
 //    const val BLUETOOTH_MAC = "00:06:66:F2:34:F8";
 

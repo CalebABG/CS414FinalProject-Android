@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="15dp"
-    tools:context=".PacketReplayDialogFragment">
+    tools:context=".replays.PacketReplayDialogFragment">
 
     <TextView
         android:id="@+id/titleTextView"
@@ -14,6 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="Save Packet Replay?"
+        android:textColor="@color/black"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -27,6 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="Packets Recorded: 0 / MAX"
+        android:textColor="@color/black"
         android:textSize="17sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="@+id/titleTextView"
@@ -41,6 +43,7 @@
         android:layout_marginTop="20dp"
         android:text="Note: Replay name will be generated if left empty"
         android:textSize="14sp"
+        android:textColor="@color/black"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="@+id/replayNameEditText"
         app:layout_constraintStart_toStartOf="@+id/replayNameEditText"
@@ -53,6 +56,7 @@
         android:layout_marginTop="24dp"
         android:ems="10"
         android:hint="Replay name"
+        android:textColor="@color/black"
         android:inputType="text"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="@+id/textView6"

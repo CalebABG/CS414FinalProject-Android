@@ -453,9 +453,9 @@
 
                             <Button
                                 android:id="@+id/viewPacketReplaysButton"
-                                android:layout_width="135dp"
+                                android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
-                                android:text="View Replays"
+                                android:text="View"
                                 android:textSize="13sp"
                                 android:backgroundTint="@color/colorAccent"
                                 android:layout_marginStart="4dp" />

@@ -19,6 +19,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import com.example.cs414finalprojectandroid.Utilities.constrain
+import com.example.cs414finalprojectandroid.Utilities.getReplayBook
 import com.example.cs414finalprojectandroid.Utilities.isFull
 import com.example.cs414finalprojectandroid.Utilities.showToast
 import com.example.cs414finalprojectandroid.Utilities.toByte
@@ -26,6 +27,9 @@ import com.example.cs414finalprojectandroid.Utilities.toByteArray
 import com.example.cs414finalprojectandroid.Utilities.toHex
 import com.example.cs414finalprojectandroid.bluetooth.ArduinoPacket
 import com.example.cs414finalprojectandroid.bluetooth.BluetoothService
+import com.example.cs414finalprojectandroid.replays.PacketReplayDialogFragment
+import com.example.cs414finalprojectandroid.replays.PacketReplayDialogListener
+import com.example.cs414finalprojectandroid.replays.PacketReplayStatus
 import com.example.cs414finalprojectandroid.settings.AppSettings
 import com.google.gson.Gson
 import io.paperdb.Paper
@@ -35,36 +39,26 @@ import java.util.*
 
 class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDialogListener {
     companion object {
-        var PARENTAL_OVERRIDE: Boolean = false
-
         const val UBYTE_MAX = 255.0
         const val GRAV_ACCEL = 9.81
+
         const val MIN_MOTOR_VAL = -UBYTE_MAX
         const val MAX_MOTOR_VAL = UBYTE_MAX
 
-        var appSettings = AppSettings()
-
         const val SHARED_PREF_FILE_NAME = "CS414FinalProject"
-        const val SHARED_PREF_APP_SETTINGS_KEY = "calibration"
+        const val SHARED_PREF_APP_SETTINGS_KEY = "appsettings"
 
-        // TODO: Save Drive Parameters to SharedPreferences
-
-        // TODO: saved recordings will be called "Replays" + suffixed with timestamp
-        // TODO: Loop through Replays with delay speed of
-        const val PAPER_COLLECTION_NAME = "ArduinoPacketReplays"
         const val REPLAY_LIST_SIZE = 350 // ~30-40 seconds of recording time based on Arduino packet processing
+        const val REPLAY_COLLECTION_NAME = "PacketReplays"
+
+        val gson = Gson()
+        var appSettings = AppSettings()
 
         var shownPacketReplayDoneToast = false
         var packetReplayStatus = PacketReplayStatus.None
-
         var packetReplayList: MutableList<String> = ArrayList(REPLAY_LIST_SIZE)
 
-        const val ACTIVE_SHIELD_COLOR = "#32A341"
-        const val INACTIVE_SHIELD_COLOR = "#AEB1AE"
-
         lateinit var bluetoothService: BluetoothService
-
-        val gson = Gson()
 
         fun getAppSharedPreferences(context: Context): SharedPreferences {
             return context.getSharedPreferences(SHARED_PREF_FILE_NAME, MODE_PRIVATE)
@@ -99,8 +93,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
-        // TODO: Keep commented?
-//        if (!bluetoothService.isConnected) connectToBluetooth()
+        // if (!bluetoothService.isConnected) connectToBluetooth()
 
         setDriveParametersButton.setOnClickListener { sendDriveParameters() }
         accelSwitch.setOnClickListener { updateSensorInfoText() }
@@ -154,10 +147,10 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
         }
 
         viewPacketReplaysButton.setOnClickListener {
-            val replays = Paper.book(PAPER_COLLECTION_NAME).allKeys
+            val replays = getReplayBook().allKeys
 
             if (replays.isNullOrEmpty()) {
-                showToast(this, "No replays saved yet, save some first")
+                showToast(this, "No Replays saved yet, save some first")
             }
             else {
                 Intent(this, ViewPacketReplaysActivity::class.java).also {
@@ -171,13 +164,13 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
             updateShieldIconColor()
 
             if (bluetoothService.isConnected) {
-                if (PARENTAL_OVERRIDE) {
+                if (appSettings.parentalOverride) {
                     showToast(this, "Activating Parental Control")
                 } else {
                     showToast(this, "Deactivating Parental Control")
                 }
 
-                val packet = ArduinoPacket.create(ArduinoPacket.PARENTAL_CONTROL_PACKET_ID, byteArrayOf(PARENTAL_OVERRIDE.toByte()))
+                val packet = ArduinoPacket.create(ArduinoPacket.PARENTAL_CONTROL_PACKET_ID, byteArrayOf(appSettings.parentalOverride.toByte()))
                 bluetoothService.write(packet)
             }
             else showToast(this, "Not Connected")
@@ -289,7 +282,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
     }
 
     private fun toggleParentalOverride() {
-        PARENTAL_OVERRIDE = !PARENTAL_OVERRIDE
+        appSettings.toggleParentalOverride()
     }
 
     private fun updateShieldIconColor() {
@@ -298,8 +291,8 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
     }
 
     private fun getBackgroundTint(): Int {
-        return if (PARENTAL_OVERRIDE) Color.parseColor(ACTIVE_SHIELD_COLOR)
-        else Color.parseColor(INACTIVE_SHIELD_COLOR)
+        return if (appSettings.parentalOverride) Color.parseColor(Constants.ACTIVE_SHIELD_COLOR)
+        else Color.parseColor(Constants.INACTIVE_SHIELD_COLOR)
     }
 
     private fun updateSensorInfoText() {
@@ -329,6 +322,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
 
                     val packet = ArduinoPacket.create(ArduinoPacket.DRIVE_PARAMETERS_ID, packetData)
                     bluetoothService.write(packet)
+                    showToast(this, "Set Drive Parameters")
                 }
             }
         }
@@ -349,12 +343,13 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
 
     override fun onDialogPositiveClick(dialog: DialogFragment) {
         var replayName = dialog.requireArguments().getString(PacketReplayDialogFragment.ARG_REPLAY_NAME)!!
-        if (Paper.book(PAPER_COLLECTION_NAME).contains(replayName)) {
+
+        if (getReplayBook().contains(replayName)) {
             replayName += "_${UUID.randomUUID().toString().substring(0, 7)}"
             showToast(this, "Replay already exists, adding random UUID to Replay name")
         }
 
-        Paper.book(PAPER_COLLECTION_NAME).write(replayName, packetReplayList)
+        getReplayBook().write(replayName, packetReplayList)
         resetPacketReplayState()
         showToast(this, "Saved Replay: $replayName")
     }
@@ -383,7 +378,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
             accelYTextView.text = "%.3fm/s²".format(accelY)
         }
 
-        if (PARENTAL_OVERRIDE) {
+        if (appSettings.parentalOverride) {
             if (bluetoothService.isConnected) {
                 val sensorXBytes = calcAccelX.toByteArray()
                 val sensorYBytes = calcAccelY.toByteArray()

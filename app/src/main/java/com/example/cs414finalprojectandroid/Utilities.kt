@@ -2,11 +2,17 @@ package com.example.cs414finalprojectandroid
 
 import android.content.Context
 import android.widget.Toast
+import io.paperdb.Book
+import io.paperdb.Paper
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.min
 
 object Utilities {
+    fun getReplayBook(): Book {
+        return Paper.book(ControlActivity.REPLAY_COLLECTION_NAME)
+    }
+
     fun showToast(context: Context, text: String, toastLength: Int = Toast.LENGTH_SHORT) {
         Toast.makeText(context, text, toastLength).show()
     }

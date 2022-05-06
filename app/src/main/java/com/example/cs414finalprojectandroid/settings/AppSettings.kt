@@ -1,4 +1,10 @@
 package com.example.cs414finalprojectandroid.settings
 
-data class AppSettings(var driveSpeedScale: Float = 0f,
-                       var turnSpeedScale: Float = 0f)
+data class AppSettings(var driveSpeedScale: Float = 0.50f,
+                       var turnSpeedScale: Float = 0.115f,
+                       var parentalOverride: Boolean = false)
+{
+    fun toggleParentalOverride() {
+        parentalOverride = !parentalOverride
+    }
+}
