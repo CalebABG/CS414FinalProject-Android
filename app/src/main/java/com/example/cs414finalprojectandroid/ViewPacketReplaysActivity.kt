@@ -18,7 +18,7 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
     private var selectedPacketReplayIndex: Int = -1
 
     private var packetReplayThread: Thread? = null
-    private val packetReplayList: MutableList<String> = mutableListOf()
+    private val packetReplayList = ArrayList<String>(100)
 
     private var packetReplayStatus = PacketReplayStatus.Stopped
     private lateinit var packetReplayAdapter: ArrayAdapter<String>

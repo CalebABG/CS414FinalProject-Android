@@ -66,7 +66,9 @@ class ArduinoPacket {
         val packet: MutableList<Byte> = mutableListOf()
 
         addBytesToList(id.toByteArray(), packet)
+
         packet.add(ack)
+
         addBytesToList(dataLength.toByteArray(), packet)
         addBytesToList(data, packet)
 
