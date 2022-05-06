@@ -106,6 +106,11 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        loadSavedReplays()
+    }
+
     override fun onDestroy() {
         packetReplayThread?.interrupt()
         super.onDestroy()
@@ -143,11 +148,6 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
     private fun setReplayStatusTextViewVisible(visible: Boolean) {
         val visibility = if (visible) View.VISIBLE else View.INVISIBLE
         runOnUiThread { replayStatusTextView.visibility = visibility }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        loadSavedReplays()
     }
 
     private fun removeReplay(index: Int) {
