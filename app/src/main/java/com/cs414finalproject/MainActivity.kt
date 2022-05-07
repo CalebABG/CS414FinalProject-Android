@@ -1,4 +1,4 @@
-package com.example.cs414finalprojectandroid
+package com.cs414finalproject
 
 import android.Manifest
 import android.app.Activity
@@ -14,9 +14,9 @@ import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.example.cs414finalprojectandroid.Utilities.showToast
-import com.example.cs414finalprojectandroid.retrofit.LoremPicsumService
-import kotlinx.android.synthetic.main.activity_main.*
+import com.cs414finalproject.Utilities.showToast
+import com.cs414finalproject.databinding.ActivityMainBinding
+import com.cs414finalproject.retrofit.LoremPicsumService
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -58,13 +58,17 @@ class MainActivity : AppCompatActivity() {
 
     private var loremPicsService = retrofit.create(LoremPicsumService::class.java)
 
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         bluetoothAdapter = getSystemBluetoothAdapter(this)
 
-        continueBtn.setOnClickListener { startCarControlActivity() }
+        binding.continueBtn.setOnClickListener { startCarControlActivity() }
     }
 
     override fun onResume() {
@@ -112,11 +116,11 @@ class MainActivity : AppCompatActivity() {
                         bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                     }
 
-                    mainScreenImage.setImageBitmap(bitmap)
+                    binding.mainScreenImage.setImageBitmap(bitmap)
                 }
 
                 override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    mainScreenImage.setImageResource(R.mipmap.ic_electric_car_round)
+                    binding.mainScreenImage.setImageResource(R.mipmap.ic_electric_car_round)
                     showToast(this@MainActivity, "Could not fetch from LoremPics")
                 }
             })

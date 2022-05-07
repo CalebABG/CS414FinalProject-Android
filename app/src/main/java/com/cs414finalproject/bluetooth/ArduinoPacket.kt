@@ -1,6 +1,6 @@
-package com.example.cs414finalprojectandroid.bluetooth
+package com.cs414finalproject.bluetooth
 
-import com.example.cs414finalprojectandroid.Utilities.toByteArray
+import com.cs414finalproject.Utilities.toByteArray
 import java.util.zip.CRC32
 
 class ArduinoPacket {

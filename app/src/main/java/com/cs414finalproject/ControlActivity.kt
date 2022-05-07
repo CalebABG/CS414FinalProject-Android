@@ -1,6 +1,7 @@
-package com.example.cs414finalprojectandroid
+package com.cs414finalproject
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
@@ -16,28 +17,27 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.Log
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.DialogFragment
-import com.example.cs414finalprojectandroid.Utilities.constrain
-import com.example.cs414finalprojectandroid.Utilities.getReplayBook
-import com.example.cs414finalprojectandroid.Utilities.isFull
-import com.example.cs414finalprojectandroid.Utilities.showToast
-import com.example.cs414finalprojectandroid.Utilities.toByte
-import com.example.cs414finalprojectandroid.Utilities.toByteArray
-import com.example.cs414finalprojectandroid.Utilities.toHex
-import com.example.cs414finalprojectandroid.bluetooth.ArduinoPacket
-import com.example.cs414finalprojectandroid.bluetooth.BluetoothService
-import com.example.cs414finalprojectandroid.replays.PacketReplayDialogFragment
-import com.example.cs414finalprojectandroid.replays.PacketReplayDialogListener
-import com.example.cs414finalprojectandroid.replays.PacketReplayStatus
-import com.example.cs414finalprojectandroid.settings.AppSettings
+import com.cs414finalproject.Utilities.constrain
+import com.cs414finalproject.Utilities.getReplayBook
+import com.cs414finalproject.Utilities.isFull
+import com.cs414finalproject.Utilities.showToast
+import com.cs414finalproject.Utilities.toByte
+import com.cs414finalproject.Utilities.toByteArray
+import com.cs414finalproject.Utilities.toHex
+import com.cs414finalproject.bluetooth.ArduinoPacket
+import com.cs414finalproject.bluetooth.BluetoothService
+import com.cs414finalproject.databinding.ActivityControlBinding
+import com.cs414finalproject.replays.PacketReplayStatus
+import com.cs414finalproject.settings.AppSettings
 import com.google.gson.Gson
 import io.paperdb.Paper
-import kotlinx.android.synthetic.main.activity_control.*
 import java.lang.ref.WeakReference
 import java.util.*
 
-class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDialogListener {
+class ControlActivity : AppCompatActivity(), SensorEventListener {
     companion object {
         const val UBYTE_MAX = 255.0
         const val GRAV_ACCEL = 9.81
@@ -68,10 +68,15 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
     private lateinit var accelerometer: Sensor
     private lateinit var sensorManager: SensorManager
     private lateinit var bluetoothMessageHandler: BluetoothMessageHandler
+    private lateinit var packetReplayResultLauncher: ActivityResultLauncher<Intent>
+
+    private lateinit var binding: ActivityControlBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_control)
+
+        binding = ActivityControlBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         updateShieldIconColor()
         updateSensorInfoText()
@@ -85,11 +90,14 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
 
         // if (!bluetoothService.isConnected) connectToBluetooth()
 
-        setDriveParametersButton.setOnClickListener { sendDriveParameters() }
-        accelSwitch.setOnClickListener { updateSensorInfoText() }
+        // Initialize Paper NoSQL database
+        Paper.init(this)
+
+        binding.setDriveParametersButton.setOnClickListener { sendDriveParameters() }
+        binding.accelSwitch.setOnClickListener { updateSensorInfoText() }
 
         // TODO: Move inside logic to helper methods
-        startPacketReplayButton.setOnClickListener {
+        binding.startPacketReplayButton.setOnClickListener {
             when {
                 packetReplayCaptureDone() -> {
                     showToast(this, "Recording limit reached or manually stopped, please save or discard")
@@ -104,7 +112,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
             }
         }
 
-        stopPacketReplayButton.setOnClickListener {
+        binding.stopPacketReplayButton.setOnClickListener {
             when {
                 packetReplayCaptureDone() -> {
                     showToast(this, "Recording already stopped, please save or discard")
@@ -119,7 +127,9 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
             }
         }
 
-        savePacketReplayButton.setOnClickListener {
+        // Don't really like this, but it's not deprecated
+        packetReplayResultLauncher = getPacketReplayResultLauncher()
+        binding.savePacketReplayButton.setOnClickListener {
             if (packetReplayStatus == PacketReplayStatus.None) {
                 showToast(this, "Recording not started, please start first")
             }
@@ -131,12 +141,13 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
                     resetPacketReplayState()
                 }
                 else {
-                    showSavePacketReplayDialog()
+                    val saveReplayIntent = Intent(this, SavePacketReplayActivity::class.java)
+                    packetReplayResultLauncher.launch(saveReplayIntent)
                 }
             }
         }
 
-        viewPacketReplaysButton.setOnClickListener {
+        binding.viewPacketReplaysButton.setOnClickListener {
             val replays = getReplayBook().allKeys
 
             if (replays.isNullOrEmpty()) {
@@ -149,7 +160,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
             }
         }
 
-        parentalOverrideBtn.setOnClickListener {
+        binding.parentalOverrideBtn.setOnClickListener {
             toggleParentalOverride()
 
             if (bluetoothService.isConnected) {
@@ -165,7 +176,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
             else showToast(this, "Not Connected")
         }
 
-        emergencyStopBtn.setOnClickListener {
+        binding.emergencyStopBtn.setOnClickListener {
             if (bluetoothService.isConnected) {
                 showToast(this, "Stopping Motors")
                 val packet = ArduinoPacket.create(ArduinoPacket.STOP_MOTORS_PACKET_ID)
@@ -173,7 +184,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
             } else showToast(this, "Not Connected")
         }
 
-        btReconnectBtn.setOnClickListener {
+        binding.btReconnectBtn.setOnClickListener {
             when {
                 bluetoothService.isConnected -> showToast(this, "Already Connected")
                 bluetoothService.isConnecting -> showToast(this, "Connecting...")
@@ -181,13 +192,10 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
             }
         }
 
-        btDisconnectBtn.setOnClickListener {
+        binding.btDisconnectBtn.setOnClickListener {
             if (bluetoothService.isConnected) disconnectFromBluetooth()
             else showToast(this, "Not Connected")
         }
-
-        // Initialize Paper NoSQL database
-        Paper.init(this)
     }
 
     override fun onPause() {
@@ -214,6 +222,39 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
         showExitDialog()
     }
 
+    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
+
+    override fun onSensorChanged(event: SensorEvent) {
+        val accelX: Float = event.values[0]
+        val accelY: Float = event.values[1]
+
+        val multiplierX = UBYTE_MAX / GRAV_ACCEL
+        val multiplierY = UBYTE_MAX / GRAV_ACCEL
+
+        val calcAccelX = constrain(accelX * multiplierX, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt().toShort()
+        val calcAccelY = constrain(accelY * multiplierY, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt().toShort()
+
+        if (binding.accelSwitch.isChecked) {
+            binding.accelXTextView.text = "$calcAccelX"
+            binding.accelYTextView.text = "$calcAccelY"
+        } else {
+            binding.accelXTextView.text = "%.3fm/s²".format(accelX)
+            binding.accelYTextView.text = "%.3fm/s²".format(accelY)
+        }
+
+        if (appSettings.parentalOverride) {
+            if (bluetoothService.isConnected) {
+                val sensorXBytes = calcAccelX.toByteArray()
+                val sensorYBytes = calcAccelY.toByteArray()
+
+                val packetData = sensorXBytes + sensorYBytes
+
+                val packet = ArduinoPacket.create(ArduinoPacket.SENSOR_DATA_PACKET_ID, packetData)
+                bluetoothService.write(packet)
+            }
+        }
+    }
+
     private fun showExitDialog() {
         AlertDialog.Builder(this)
             .setPositiveButton("Yes") { _, _ -> finish() }
@@ -232,8 +273,8 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
         val sharedPreferences = getAppSharedPreferences(this)
         val editor = sharedPreferences.edit()
 
-        val driveSpeedScaleFloat = driveSpeedScaleEditText.text.toString().toFloatOrNull()
-        val turnSpeedScaleFloat = turningSpeedScaleEditText.text.toString().toFloatOrNull()
+        val driveSpeedScaleFloat = binding.driveSpeedScaleEditText.text.toString().toFloatOrNull()
+        val turnSpeedScaleFloat = binding.turningSpeedScaleEditText.text.toString().toFloatOrNull()
 
         if (driveSpeedScaleFloat != null) appSettings.driveSpeedScale = driveSpeedScaleFloat
         if (turnSpeedScaleFloat != null) appSettings.turnSpeedScale = turnSpeedScaleFloat
@@ -272,7 +313,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
 
     private fun updateShieldIconColor() {
         val bgTintColor = getBackgroundTint()
-        parentalOverrideBtn.backgroundTintList = ColorStateList.valueOf(bgTintColor)
+        binding.parentalOverrideBtn.backgroundTintList = ColorStateList.valueOf(bgTintColor)
     }
 
     private fun getBackgroundTint(): Int {
@@ -281,20 +322,21 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
     }
 
     private fun updateSensorInfoText() {
+        val accelSwitch = binding.accelSwitch
         accelSwitch.text = if (accelSwitch.isChecked) "Calc" else "Raw"
     }
 
     private fun updateDriveParametersFromAppSettings() {
-        driveSpeedScaleEditText.setText(appSettings.driveSpeedScale.toString())
-        turningSpeedScaleEditText.setText(appSettings.turnSpeedScale.toString())
+        binding.driveSpeedScaleEditText.setText(appSettings.driveSpeedScale.toString())
+        binding.turningSpeedScaleEditText.setText(appSettings.turnSpeedScale.toString())
     }
 
     private fun sendDriveParameters() {
         if (!bluetoothService.isConnected) {
             showToast(this, "Bluetooth not connected, please connect first")
         } else {
-            val driveSpeedScaleText = driveSpeedScaleEditText.text.toString()
-            val turningSpeedScaleText = turningSpeedScaleEditText.text.toString()
+            val driveSpeedScaleText = binding.driveSpeedScaleEditText.text.toString()
+            val turningSpeedScaleText = binding.turningSpeedScaleEditText.text.toString()
 
             if (driveSpeedScaleText.isEmpty() || turningSpeedScaleText.isEmpty()) {
                 showToast(this, "Please make sure both parameters are not Empty")
@@ -325,7 +367,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
     }
 
     private fun updatePacketsRecordedText() {
-        currentRecordedPacketCount.text = "Packets Recorded: ${packetReplayList.size} / $REPLAY_LIST_SIZE"
+        binding.currentRecordedPacketCount.text = "Packets Recorded: ${packetReplayList.size} / $REPLAY_LIST_SIZE"
     }
 
     private fun resetPacketReplayState() {
@@ -335,58 +377,20 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
         updatePacketsRecordedText()
     }
 
-    private fun showSavePacketReplayDialog() {
-        PacketReplayDialogFragment
-            .newInstance(packetReplayList.size.toString(), REPLAY_LIST_SIZE.toString())
-            .show(supportFragmentManager, "PacketReplayDialogFragment")
-    }
+    private fun getPacketReplayResultLauncher(): ActivityResultLauncher<Intent> {
+        return registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data: Intent? = result.data
 
-    override fun onDialogPositiveClick(dialog: DialogFragment) {
-        var replayName = dialog.requireArguments().getString(PacketReplayDialogFragment.ARG_REPLAY_NAME)!!
+                val replayName = data?.getStringExtra(SavePacketReplayActivity.REPLAY_RESULT_INTENT_EXTRA_KEY)
 
-        if (getReplayBook().contains(replayName)) {
-            replayName += "_${UUID.randomUUID().toString().substring(0, 7)}"
-            showToast(this, "Replay already exists, adding random UUID to Replay name")
-        }
+                if (!replayName.isNullOrEmpty()) {
+                    getReplayBook().write(replayName, packetReplayList)
+                    showToast(this, "Saved Replay: $replayName")
+                }
+                else showToast(this, "Replay Discarded")
 
-        getReplayBook().write(replayName, packetReplayList)
-        resetPacketReplayState()
-        showToast(this, "Saved Replay: $replayName")
-    }
-
-    override fun onDialogNegativeClick(dialog: DialogFragment) {
-        resetPacketReplayState()
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
-
-    override fun onSensorChanged(event: SensorEvent) {
-        val accelX: Float = event.values[0]
-        val accelY: Float = event.values[1]
-
-        val multiplierX = UBYTE_MAX / GRAV_ACCEL
-        val multiplierY = UBYTE_MAX / GRAV_ACCEL
-
-        val calcAccelX = constrain(accelX * multiplierX, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt().toShort()
-        val calcAccelY = constrain(accelY * multiplierY, MIN_MOTOR_VAL, MAX_MOTOR_VAL).toInt().toShort()
-
-        if (accelSwitch.isChecked) {
-            accelXTextView.text = "$calcAccelX"
-            accelYTextView.text = "$calcAccelY"
-        } else {
-            accelXTextView.text = "%.3fm/s²".format(accelX)
-            accelYTextView.text = "%.3fm/s²".format(accelY)
-        }
-
-        if (appSettings.parentalOverride) {
-            if (bluetoothService.isConnected) {
-                val sensorXBytes = calcAccelX.toByteArray()
-                val sensorYBytes = calcAccelY.toByteArray()
-
-                val packetData = sensorXBytes + sensorYBytes
-
-                val packet = ArduinoPacket.create(ArduinoPacket.SENSOR_DATA_PACKET_ID, packetData)
-                bluetoothService.write(packet)
+                resetPacketReplayState()
             }
         }
     }
@@ -403,16 +407,16 @@ class ControlActivity : AppCompatActivity(), SensorEventListener, PacketReplayDi
                 when (msg.what) {
                     Constants.MESSAGE_STATE_CHANGE -> when (msg.arg1) {
                         BluetoothService.STATE_CONNECTED -> {
-                            activity.btStatusTextView.text = "Connected"
+                            activity.binding.btStatusTextView.text = "Connected"
                         }
 
                         BluetoothService.STATE_CONNECTING -> {
-                            activity.btStatusTextView.text = "Connecting..."
+                            activity.binding.btStatusTextView.text = "Connecting..."
                         }
 
                         BluetoothService.STATE_NONE,
                         BluetoothService.STATE_LISTEN -> {
-                            activity.btStatusTextView.text = "Disconnected"
+                            activity.binding.btStatusTextView.text = "Disconnected"
                         }
                     }
 

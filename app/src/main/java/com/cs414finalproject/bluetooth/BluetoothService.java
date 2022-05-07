@@ -1,4 +1,4 @@
-package com.example.cs414finalprojectandroid.bluetooth;
+package com.cs414finalproject.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -9,7 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.example.cs414finalprojectandroid.Constants;
+import com.cs414finalproject.Constants;
 
 import java.io.IOException;
 import java.io.InputStream;

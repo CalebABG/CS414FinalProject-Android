@@ -1,4 +1,4 @@
-package com.example.cs414finalprojectandroid
+package com.cs414finalproject
 
 import org.junit.Test
 

@@ -1,7 +1,7 @@
 /*
  * Adapted from: https://github.com/googlearchive/android-BluetoothChat
  */
-package com.example.cs414finalprojectandroid
+package com.cs414finalproject
 
 /**
  * Defines several constants used between Bluetooth service and the UI.

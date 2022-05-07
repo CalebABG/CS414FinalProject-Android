@@ -1,4 +1,4 @@
-package com.example.cs414finalprojectandroid
+package com.cs414finalproject
 
 import android.content.Context
 import android.widget.Toast
@@ -6,9 +6,15 @@ import io.paperdb.Book
 import io.paperdb.Paper
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import kotlin.math.min
 
 object Utilities {
+    val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter
+        .ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+        .withZone(ZoneOffset.UTC)
+
     fun getReplayBook(): Book {
         return Paper.book(ControlActivity.REPLAY_COLLECTION_NAME)
     }

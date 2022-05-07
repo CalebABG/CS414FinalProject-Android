@@ -1,4 +1,4 @@
-package com.example.cs414finalprojectandroid.retrofit;
+package com.cs414finalproject.retrofit;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
