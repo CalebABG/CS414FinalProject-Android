@@ -238,8 +238,8 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
             binding.accelXTextView.text = "$calcAccelX"
             binding.accelYTextView.text = "$calcAccelY"
         } else {
-            binding.accelXTextView.text = "%.3fm/s²".format(accelX)
-            binding.accelYTextView.text = "%.3fm/s²".format(accelY)
+            binding.accelXTextView.text = "%.3f m/s²".format(accelX)
+            binding.accelYTextView.text = "%.3f m/s²".format(accelY)
         }
 
         if (appSettings.parentalOverride) {
