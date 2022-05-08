@@ -1,6 +1,5 @@
 package com.cs414finalproject
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
@@ -36,7 +35,6 @@ import com.cs414finalproject.settings.AppSettings
 import com.google.gson.Gson
 import io.paperdb.Paper
 import java.lang.ref.WeakReference
-import java.util.*
 
 class ControlActivity : AppCompatActivity(), SensorEventListener {
     companion object {
