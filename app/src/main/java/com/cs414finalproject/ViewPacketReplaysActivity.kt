@@ -18,9 +18,9 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
     private var selectedPacketReplayIndex: Int = -1
 
     private var packetReplayThread: Thread? = null
+    private var packetReplayStatus = PacketReplayStatus.Stopped
     private val packetReplayList = ArrayList<String>(100)
 
-    private var packetReplayStatus = PacketReplayStatus.Stopped
     private lateinit var packetReplayAdapter: ArrayAdapter<String>
 
     private lateinit var binding: ActivityViewPacketReplaysBinding
@@ -61,7 +61,7 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
                 } else {
                     if (selectedPacketIndexIsValid()) {
                         packetReplayStatus = PacketReplayStatus.Started
-                        setReplayStatusTextViewVisible(true)
+                        setReplayStatusTextViewVisibility(true)
 
                         packetReplayThread = Thread {
                             try {
@@ -78,7 +78,7 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
 
                                     ControlActivity.bluetoothService.write(packetBytes)
 
-                                    updateReplayStatusTextView(i + 1, replayPackets.size)
+                                    updateReplayStatusTextViewText(i + 1, replayPackets.size)
 
                                     // Sync with SENSOR_DELAY_UI delay
                                     Thread.sleep(60)
@@ -138,18 +138,18 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
         return selectedPacketReplayIndex in 0 until packetReplayList.size
     }
 
-    private fun updateReplayStatusTextView(packetNumber: Int, numPackets: Int) {
+    private fun updateReplayStatusTextViewText(packetNumber: Int, numPackets: Int) {
         val format = "Sending Packet $packetNumber / $numPackets"
         runOnUiThread { binding.replayStatusTextView.text = format }
     }
 
     private fun resetReplaySendState() {
         packetReplayStatus = PacketReplayStatus.Stopped
-        setReplayStatusTextViewVisible(false)
-        updateReplayStatusTextView(0, 0)
+        setReplayStatusTextViewVisibility(false)
+        updateReplayStatusTextViewText(0, 0)
     }
 
-    private fun setReplayStatusTextViewVisible(visible: Boolean) {
+    private fun setReplayStatusTextViewVisibility(visible: Boolean) {
         val visibility = if (visible) View.VISIBLE else View.INVISIBLE
         runOnUiThread { binding.replayStatusTextView.visibility = visibility }
     }

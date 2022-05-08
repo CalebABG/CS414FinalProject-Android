@@ -13,7 +13,6 @@ import java.time.Instant
 import java.util.*
 
 class SavePacketReplayActivity : AppCompatActivity() {
-
     companion object {
         const val REPLAY_RESULT_INTENT_EXTRA_KEY = "replayName"
     }

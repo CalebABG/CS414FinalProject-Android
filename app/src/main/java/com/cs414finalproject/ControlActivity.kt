@@ -22,6 +22,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.cs414finalproject.Utilities.constrain
 import com.cs414finalproject.Utilities.getReplayBook
+import com.cs414finalproject.Utilities.getSystemBluetoothAdapter
 import com.cs414finalproject.Utilities.isFull
 import com.cs414finalproject.Utilities.showToast
 import com.cs414finalproject.Utilities.toByte
@@ -56,7 +57,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
 
         var shownPacketReplayDoneToast = false
         var packetReplayStatus = PacketReplayStatus.None
-        var packetReplayList: MutableList<String> = ArrayList(REPLAY_LIST_SIZE)
+        var packetReplayList = ArrayList<String>(REPLAY_LIST_SIZE)
 
         lateinit var bluetoothService: BluetoothService
 
@@ -96,7 +97,6 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
         binding.setDriveParametersButton.setOnClickListener { sendDriveParameters() }
         binding.accelSwitch.setOnClickListener { updateSensorInfoText() }
 
-        // TODO: Move inside logic to helper methods
         binding.startPacketReplayButton.setOnClickListener {
             when {
                 packetReplayCaptureDone() -> {
@@ -298,9 +298,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun connectDevice() {
-        val device = MainActivity
-            .getSystemBluetoothAdapter(this)!!
-            .getRemoteDevice(Constants.BLUETOOTH_MAC)
+        val device = getSystemBluetoothAdapter(this)!!.getRemoteDevice(Constants.BLUETOOTH_MAC)
 
         bluetoothService.start()
         bluetoothService.connect(device, true)
@@ -395,11 +393,9 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
-    private class BluetoothMessageHandler(activity: ControlActivity) :
-        Handler(Looper.getMainLooper()) {
+    private class BluetoothMessageHandler(activity: ControlActivity) : Handler(Looper.getMainLooper()) {
         private val activityReference: WeakReference<ControlActivity> = WeakReference(activity)
 
-        @SuppressLint("SetTextI18n")
         override fun handleMessage(msg: Message) {
             val activity = activityReference.get()
 

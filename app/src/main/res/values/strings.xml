@@ -4,6 +4,35 @@
     <string name="main_info_1">Welcome to the RC Car App</string>
     <string name="tap_to_continue">Tap to Continue</string>
     <string name="raw_sensor_unit">0.00 m/s\u00B2</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="main_activity_start_screen_image">Start Screen Image</string>
+
+    <string name="control_activity_sensors">Sensors</string>
+    <string name="control_activity_calc">Calc</string>
+    <string name="control_activity_x">X:</string>
+    <string name="control_activity_y">Y:</string>
+    <string name="control_activity_buttons">Buttons</string>
+    <string name="control_activity_bluetooth">Bluetooth</string>
+    <string name="control_activity_connected">Connected</string>
+    <string name="control_activity_drive_speed_scale">Drive Speed Scale</string>
+    <string name="control_activity_set_parameters">Set Parameters</string>
+    <string name="control_activity_packet_replays">Packet Replays</string>
+    <string name="control_activity_packets_recorded">Packets Recorded: 0 / MAX</string>
+    <string name="control_activity_record">Record</string>
+    <string name="control_activity_stop">Stop</string>
+    <string name="control_activity_save">Save</string>
+    <string name="control_activity_view">View</string>
+    <string name="control_activity_turning_speed_scale">Turning Speed Scale</string>
+
+    <string name="save_packet_replay_activity_save_packet_replay">Save Packet Replay?</string>
+    <string name="save_packet_replay_packets_recorded">Packets Recorded: 0 / MAX</string>
+    <string name="save_packet_replay_notes">Note: Replay name will be generated if left empty</string>
+    <string name="save_packet_replay_replay_name">Replay name</string>
+    <string name="save_packet_replay_discard">Discard</string>
+    <string name="save_packet_replay_save">Save</string>
+    <string name="view_packet_replays_activity_saved_replays">Saved Replays</string>
+    <string name="view_packet_replays_activity_delete">Delete</string>
+    <string name="view_packet_replays_activity_send">Send</string>
+    <string name="view_packet_replays_activity_stop">Stop</string>
+    <string name="view_packet_replays_activity_sending_packet">Sending Packet X / X</string>
 </resources>

@@ -14,6 +14,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.cs414finalproject.Utilities.getSystemBluetoothAdapter
 import com.cs414finalproject.Utilities.showToast
 import com.cs414finalproject.databinding.ActivityMainBinding
 import com.cs414finalproject.retrofit.LoremPicsumService
@@ -23,26 +24,9 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 
-/*
-Project Points (8):
-
-DONE 1 - Use of SharedPreferences for persisting Min/Max sensor config
-DONE 1 - Use of Android service that requires user-granted permissions (Bluetooth + Location)
-DONE 1 - Use of three or more Activities
-1 - Use of Notifications (local notification - app put in background, de-register accelerometer listener) / safety if bluetooth connected
-2 - Use of Broadcast Receiver Services
-DONE 2 - Use of SQLite database (store sent packets, can use to replay motion)
-DONE 2 - Use of at least one device sensor (Accelerometer)
-DONE 2 - Use of a REST-ful HTTP API [Retrofit] (Use for Start screen photo) - look at `Lorem Picsum`: https://picsum.photos/
-*/
-
 class MainActivity : AppCompatActivity() {
     companion object {
         const val PERMISSIONS_REQUEST_CODE = 0xE1
-
-        fun getSystemBluetoothAdapter(activity: Activity): BluetoothAdapter? {
-            return (activity.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
-        }
     }
 
     private var neededPermissions = gatherNeededPermissions()

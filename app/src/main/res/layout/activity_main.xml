@@ -18,7 +18,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@mipmap/ic_electric_car_round" />
+        app:srcCompat="@mipmap/ic_electric_car_round"
+        android:contentDescription="@string/main_activity_start_screen_image" />
 
     <TextView
         android:id="@+id/textView"

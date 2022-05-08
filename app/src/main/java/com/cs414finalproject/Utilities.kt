@@ -1,5 +1,8 @@
 package com.cs414finalproject
 
+import android.app.Activity
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.widget.Toast
 import io.paperdb.Book
@@ -21,6 +24,10 @@ object Utilities {
 
     fun showToast(context: Context, text: String, toastLength: Int = Toast.LENGTH_SHORT) {
         Toast.makeText(context, text, toastLength).show()
+    }
+
+    fun getSystemBluetoothAdapter(activity: Activity): BluetoothAdapter? {
+        return (activity.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
     }
 
     fun Int.toByteArray(): ByteArray {

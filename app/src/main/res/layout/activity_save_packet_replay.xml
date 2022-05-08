@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
-        android:text="Save Packet Replay?"
+        android:text="@string/save_packet_replay_activity_save_packet_replay"
         android:textColor="@color/white"
         android:textSize="24sp"
         android:textStyle="bold"
@@ -27,7 +27,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Packets Recorded: 0 / MAX"
+        android:text="@string/save_packet_replay_packets_recorded"
         android:textColor="@color/white"
         android:textSize="17sp"
         android:textStyle="bold"
@@ -41,7 +41,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Note: Replay name will be generated if left empty"
+        android:text="@string/save_packet_replay_notes"
         android:textSize="14sp"
         android:textColor="@color/white"
         android:textStyle="bold"
@@ -55,7 +55,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:ems="10"
-        android:hint="Replay name"
+        android:hint="@string/save_packet_replay_replay_name"
         android:textColor="@color/white"
         android:textColorHint="@color/white"
         android:inputType="text"
@@ -71,7 +71,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginTop="28dp"
         android:backgroundTint="@android:color/holo_red_dark"
-        android:text="Discard"
+        android:text="@string/save_packet_replay_discard"
         app:layout_constraintStart_toStartOf="@+id/noteTextView"
         app:layout_constraintTop_toBottomOf="@+id/noteTextView" />
 
@@ -82,7 +82,7 @@
         android:layout_marginTop="28dp"
         android:layout_marginEnd="32dp"
         android:backgroundTint="@android:color/holo_green_dark"
-        android:text="Save"
+        android:text="@string/save_packet_replay_save"
         app:layout_constraintEnd_toEndOf="@+id/noteTextView"
         app:layout_constraintTop_toBottomOf="@+id/noteTextView" />
 

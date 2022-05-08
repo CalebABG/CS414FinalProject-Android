@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="Saved Replays"
+        android:text="@string/view_packet_replays_activity_saved_replays"
         android:textColor="@color/white"
         android:textSize="26sp"
         android:textStyle="bold"
@@ -37,7 +37,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:backgroundTint="@android:color/holo_red_dark"
-        android:text="Delete"
+        android:text="@string/view_packet_replays_activity_delete"
         app:layout_constraintStart_toEndOf="@+id/stopReplayButton"
         app:layout_constraintTop_toTopOf="@+id/stopReplayButton" />
 
@@ -47,7 +47,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:backgroundTint="@color/colorPrimary"
-        android:text="Send"
+        android:text="@string/view_packet_replays_activity_send"
         app:layout_constraintStart_toStartOf="@+id/packetReplayListView"
         app:layout_constraintTop_toBottomOf="@+id/packetReplayListView" />
 
@@ -57,7 +57,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:backgroundTint="@color/purple_500"
-        android:text="Stop"
+        android:text="@string/view_packet_replays_activity_stop"
         app:layout_constraintStart_toEndOf="@+id/sendReplayButton"
         app:layout_constraintTop_toTopOf="@+id/sendReplayButton" />
 
@@ -66,10 +66,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
-        android:layout_marginEnd="4dp"
-        android:text="Sending Packet X / X"
+        android:layout_marginEnd="2dp"
+        android:text="@string/view_packet_replays_activity_sending_packet"
         android:textColor="@color/white"
-        android:textSize="14sp"
+        android:textSize="15sp"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="@+id/packetReplayListView"
         app:layout_constraintHorizontal_bias="1.0"
