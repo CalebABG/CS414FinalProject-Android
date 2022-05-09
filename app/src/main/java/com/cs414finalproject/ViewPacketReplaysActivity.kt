@@ -72,11 +72,15 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
         }
 
         binding.deleteReplayButton.setOnClickListener {
-            if (packetReplayList.isEmpty()) {
-                showToast(this, "No Replays to delete")
+            if (packetReplayStatus == PacketReplayStatus.Started) {
+                showToast(this, "Replay not stopped, please stop first")
             } else {
-                if (selectedPacketIndexIsValid()) {
-                    showDeleteReplayDialog()
+                if (packetReplayList.isEmpty()) {
+                    showToast(this, "No Replays to delete")
+                } else {
+                    if (selectedPacketIndexIsValid()) {
+                        showDeleteReplayDialog()
+                    }
                 }
             }
         }
