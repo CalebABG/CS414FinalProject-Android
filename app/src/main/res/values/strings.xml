@@ -34,5 +34,5 @@
     <string name="view_packet_replays_activity_delete">Delete</string>
     <string name="view_packet_replays_activity_send">Send</string>
     <string name="view_packet_replays_activity_stop">Stop</string>
-    <string name="view_packet_replays_activity_sending_packet">Sending Packet X / X</string>
+    <string name="view_packet_replays_activity_sending_packet">Waiting to Send…</string>
 </resources>

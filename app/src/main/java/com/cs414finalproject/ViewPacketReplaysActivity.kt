@@ -87,9 +87,7 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
     }
 
     private fun sendPacketReplay() {
-        packetReplayStatus = PacketReplayStatus.Started
-
-        setReplayStatusTextViewVisibility(true)
+        setReplaySendState(true)
 
         coroutineScope.launch {
             handleSendPacketReplayCoroutine()
@@ -111,7 +109,7 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
                     val packetBytes = replayPackets[index].hexToByteArray()
                     ControlActivity.bluetoothService.write(packetBytes)
 
-                    updateReplayStatusTextViewText(index + 1, replayPackets.size)
+                    updateReplayStatusText(index + 1, replayPackets.size)
 
                     // Sync with SENSOR_DELAY_UI delay
                     delay(60)
@@ -119,7 +117,7 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
             } catch (error: Throwable) {
                 Log.e(Constants.TAG, error.message ?: "Error in Replay playback")
             } finally {
-                resetReplaySendState()
+                setReplaySendState(false)
             }
         }
     }
@@ -147,20 +145,14 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
         return selectedPacketReplayIndex in 0 until packetReplayList.size
     }
 
-    private fun updateReplayStatusTextViewText(packetNumber: Int, numPackets: Int) {
+    private fun updateReplayStatusText(packetNumber: Int, numPackets: Int) {
         val format = "Sending Packet $packetNumber / $numPackets"
         runOnUiThread { binding.replayStatusTextView.text = format }
     }
 
-    private fun resetReplaySendState() {
-        packetReplayStatus = PacketReplayStatus.Stopped
-        setReplayStatusTextViewVisibility(false)
-        updateReplayStatusTextViewText(0, 0)
-    }
-
-    private fun setReplayStatusTextViewVisibility(visible: Boolean) {
-        val visibility = if (visible) View.VISIBLE else View.INVISIBLE
-        runOnUiThread { binding.replayStatusTextView.visibility = visibility }
+    private fun setReplaySendState(sending: Boolean) {
+        packetReplayStatus = if (sending) PacketReplayStatus.Started else PacketReplayStatus.Stopped
+        if (!sending) { runOnUiThread { binding.replayStatusTextView.text = getString(R.string.view_packet_replays_activity_sending_packet) } }
     }
 
     private fun removeReplay(index: Int) {
