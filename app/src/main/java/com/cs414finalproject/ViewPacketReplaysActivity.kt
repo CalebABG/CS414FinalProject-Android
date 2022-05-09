@@ -13,15 +13,18 @@ import com.cs414finalproject.Utilities.showToast
 import com.cs414finalproject.databinding.ActivityViewPacketReplaysBinding
 import com.cs414finalproject.replays.PacketReplayStatus
 import io.paperdb.Paper
+import kotlinx.coroutines.*
 
 class ViewPacketReplaysActivity : AppCompatActivity() {
     private var selectedPacketReplayIndex: Int = -1
 
-    private var packetReplayThread: Thread? = null
     private var packetReplayStatus = PacketReplayStatus.Stopped
     private val packetReplayList = ArrayList<String>(100)
 
     private lateinit var packetReplayAdapter: ArrayAdapter<String>
+
+    private val coroutineScope: CoroutineScope = GlobalScope
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 
     private lateinit var binding: ActivityViewPacketReplaysBinding
 
@@ -44,10 +47,10 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
 
         binding.stopReplayButton.setOnClickListener {
             if (packetReplayStatus == PacketReplayStatus.Canceled ||
-                packetReplayStatus == PacketReplayStatus.Stopped) {
+                packetReplayStatus == PacketReplayStatus.Stopped
+            ) {
                 showToast(this, "Replay cancellation in progress or never started")
-            }
-            else {
+            } else {
                 packetReplayStatus = PacketReplayStatus.Canceled
             }
         }
@@ -60,39 +63,7 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
                     showToast(this, "Bluetooth not connected, please connect first")
                 } else {
                     if (selectedPacketIndexIsValid()) {
-                        packetReplayStatus = PacketReplayStatus.Started
-                        setReplayStatusTextViewVisibility(true)
-
-                        packetReplayThread = Thread {
-                            try {
-                                val replayPackets = getReplayBook()
-                                    .read<List<String>>(packetReplayList[selectedPacketReplayIndex])!!
-
-                                for (i in replayPackets.indices) {
-                                    if (packetReplayStatus == PacketReplayStatus.Canceled) {
-                                        resetReplaySendState()
-                                        break
-                                    }
-
-                                    val packetBytes = replayPackets[i].hexToByteArray()
-
-                                    ControlActivity.bluetoothService.write(packetBytes)
-
-                                    updateReplayStatusTextViewText(i + 1, replayPackets.size)
-
-                                    // Sync with SENSOR_DELAY_UI delay
-                                    Thread.sleep(60)
-                                }
-
-                                resetReplaySendState()
-                            } catch (interruptedException: InterruptedException) {
-                                Log.e(Constants.TAG, interruptedException.message?: "Thread Interrupted in Replay playback")
-                            } catch (exception: Exception) {
-                                Log.e(Constants.TAG, exception.message ?: "Exception in Replay playback")
-                            }
-                        }
-
-                        packetReplayThread?.start()
+                        sendPacketReplay()
                     } else {
                         showToast(this, "No Replay selected, please select one first")
                     }
@@ -101,8 +72,9 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
         }
 
         binding.deleteReplayButton.setOnClickListener {
-            if (packetReplayList.isEmpty()) showToast(this, "No Replays to delete")
-            else {
+            if (packetReplayList.isEmpty()) {
+                showToast(this, "No Replays to delete")
+            } else {
                 if (selectedPacketIndexIsValid()) {
                     showDeleteReplayDialog()
                 }
@@ -110,14 +82,47 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
         }
     }
 
+    private fun sendPacketReplay() {
+        packetReplayStatus = PacketReplayStatus.Started
+
+        setReplayStatusTextViewVisibility(true)
+
+        coroutineScope.launch {
+            handleSendPacketReplayCoroutine()
+        }
+    }
+
+    private suspend fun handleSendPacketReplayCoroutine() {
+        withContext(defaultDispatcher) {
+            try {
+                val replayPackets: List<String> =
+                    getReplayBook().read(packetReplayList[selectedPacketReplayIndex])!!
+
+                for (index in replayPackets.indices) {
+                    ensureActive()
+
+                    if (packetReplayStatus == PacketReplayStatus.Canceled)
+                        break
+
+                    val packetBytes = replayPackets[index].hexToByteArray()
+                    ControlActivity.bluetoothService.write(packetBytes)
+
+                    updateReplayStatusTextViewText(index + 1, replayPackets.size)
+
+                    // Sync with SENSOR_DELAY_UI delay
+                    delay(60)
+                }
+            } catch (error: Throwable) {
+                Log.e(Constants.TAG, error.message ?: "Error in Replay playback")
+            } finally {
+                resetReplaySendState()
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         loadSavedReplays()
-    }
-
-    override fun onDestroy() {
-        packetReplayThread?.interrupt()
-        super.onDestroy()
     }
 
     private fun showDeleteReplayDialog() {
