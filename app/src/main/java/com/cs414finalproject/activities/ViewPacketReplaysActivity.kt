@@ -1,4 +1,4 @@
-package com.cs414finalproject
+package com.cs414finalproject.activities
 
 import android.app.AlertDialog
 import android.os.Bundle
@@ -6,6 +6,8 @@ import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
+import com.cs414finalproject.Constants
+import com.cs414finalproject.R
 import com.cs414finalproject.Utilities.getReplayBook
 import com.cs414finalproject.Utilities.hexToByteArray
 import com.cs414finalproject.Utilities.showToast
@@ -37,7 +39,9 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
 
         binding.packetReplayListView.choiceMode = ListView.CHOICE_MODE_SINGLE
 
-        packetReplayAdapter = ArrayAdapter(this, R.layout.simple_list_item_single_choice_white_text, packetReplayList)
+        packetReplayAdapter = ArrayAdapter(this,
+                                            R.layout.simple_list_item_single_choice_white_text,
+                                            packetReplayList)
         binding.packetReplayListView.adapter = packetReplayAdapter
 
         binding.packetReplayListView.setOnItemClickListener { _, _, position, _ ->

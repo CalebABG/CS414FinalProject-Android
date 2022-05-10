@@ -1,4 +1,4 @@
-package com.cs414finalproject
+package com.cs414finalproject.activities
 
 import android.app.Activity
 import android.content.Intent

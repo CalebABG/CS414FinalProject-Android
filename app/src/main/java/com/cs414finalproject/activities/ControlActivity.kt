@@ -1,4 +1,4 @@
-package com.cs414finalproject
+package com.cs414finalproject.activities
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -19,6 +19,7 @@ import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.cs414finalproject.Constants
 import com.cs414finalproject.Utilities.constrain
 import com.cs414finalproject.Utilities.getReplayBook
 import com.cs414finalproject.Utilities.getSystemBluetoothAdapter
@@ -168,7 +169,8 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
                     showToast(this, "Deactivating Parental Control")
                 }
 
-                val packet = ArduinoPacket.create(ArduinoPacket.PARENTAL_CONTROL_PACKET_ID, byteArrayOf(appSettings.parentalOverride.toByte()))
+                val packet = ArduinoPacket.create(ArduinoPacket.PARENTAL_CONTROL_PACKET_ID,
+                                                  byteArrayOf(appSettings.parentalOverride.toByte()))
                 bluetoothService.write(packet)
             }
             else showToast(this, "Not Connected")

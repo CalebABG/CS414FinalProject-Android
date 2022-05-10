@@ -6,12 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorAccent"
-    tools:context=".ControlActivity">
+    tools:context=".activities.ControlActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:context=".ControlActivity">
+        tools:context=".activities.ControlActivity">
 
         <LinearLayout
             android:layout_width="wrap_content"

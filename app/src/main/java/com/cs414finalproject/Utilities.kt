@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.widget.Toast
+import com.cs414finalproject.activities.ControlActivity
 import io.paperdb.Book
 import io.paperdb.Paper
 import java.nio.ByteBuffer

@@ -19,7 +19,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CS414FinalProjectAndroid">
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,13 +27,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ControlActivity"
+            android:name=".activities.ControlActivity"
             android:screenOrientation="landscape" />
         <activity
-            android:name=".ViewPacketReplaysActivity"
+            android:name=".activities.ViewPacketReplaysActivity"
             android:screenOrientation="landscape" />
         <activity
-            android:name=".SavePacketReplayActivity"
+            android:name=".activities.SavePacketReplayActivity"
             android:screenOrientation="landscape" />
     </application>
 
