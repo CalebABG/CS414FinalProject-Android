@@ -18,16 +18,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@mipmap/ic_electric_car_round"
+        app:srcCompat="@mipmap/ic_app_icon_round"
         android:contentDescription="@string/main_activity_start_screen_image" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="76dp"
         android:text="@string/main_greeting_1"
         android:textAlignment="center"
         android:textColor="@android:color/white"
@@ -38,16 +36,14 @@
     <TextView
         android:id="@+id/textView2"
         android:layout_width="match_parent"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="10dp"
         android:text="@string/main_info_1"
         android:textAlignment="center"
         android:textColor="@android:color/white"
         android:textSize="26sp"
         app:layout_constraintTop_toBottomOf="@+id/textView"
-        tools:layout_editor_absoluteX="16dp" />
+        tools:layout_editor_absoluteX="9dp" />
 
     <Button
         android:id="@+id/continueBtn"
