@@ -6,8 +6,6 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -15,12 +13,6 @@ import androidx.core.app.ActivityCompat
 import com.cs414finalproject.Utilities.getSystemBluetoothAdapter
 import com.cs414finalproject.Utilities.showToast
 import com.cs414finalproject.databinding.ActivityMainBinding
-import com.cs414finalproject.retrofit.LoremPicsumService
-import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -30,15 +22,7 @@ class MainActivity : AppCompatActivity() {
     private var neededPermissions = gatherNeededPermissions()
     private val permissionsMap = mutableMapOf<String, Int>()
 
-    private var bitmap: Bitmap? = null
-
     private var bluetoothAdapter: BluetoothAdapter? = null
-
-    private var retrofit = Retrofit.Builder()
-        .baseUrl(Constants.LOREM_PICSUM_URL)
-        .build()
-
-    private var loremPicsService = retrofit.create(LoremPicsumService::class.java)
 
     private lateinit var binding: ActivityMainBinding
 
@@ -51,11 +35,6 @@ class MainActivity : AppCompatActivity() {
         bluetoothAdapter = getSystemBluetoothAdapter(this)
 
         binding.continueBtn.setOnClickListener { startCarControlActivity() }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        setScreenLoremPicsImage()
     }
 
     override fun onRequestPermissionsResult(
@@ -82,30 +61,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    private fun setScreenLoremPicsImage() {
-        val picSize = 350
-        loremPicsService
-            .fetchMainScreenImage(picSize.toString(), picSize.toString())
-            .enqueue(object : Callback<ResponseBody> {
-                override fun onResponse(
-                    call: Call<ResponseBody>,
-                    response: Response<ResponseBody>
-                ) {
-                    if (bitmap == null) {
-                        val bytes = response.body()!!.bytes()
-                        bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                    }
-
-                    binding.mainScreenImage.setImageBitmap(bitmap)
-                }
-
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    binding.mainScreenImage.setImageResource(R.mipmap.ic_electric_car_round)
-                    showToast(this@MainActivity, "Could not fetch from LoremPics")
-                }
-            })
     }
 
     private fun startCarControlActivity() {
