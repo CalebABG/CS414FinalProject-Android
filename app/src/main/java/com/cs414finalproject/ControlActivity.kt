@@ -148,7 +148,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
         binding.viewPacketReplaysButton.setOnClickListener {
             val replays = getReplayBook().allKeys
 
-            if (replays.isNullOrEmpty()) {
+            if (replays.isEmpty()) {
                 showToast(this, "No Replays saved yet, save some first")
             }
             else {

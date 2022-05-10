@@ -1,12 +1,11 @@
 package com.cs414finalproject
 
 import android.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.ListView
+import androidx.appcompat.app.AppCompatActivity
 import com.cs414finalproject.Utilities.getReplayBook
 import com.cs414finalproject.Utilities.hexToByteArray
 import com.cs414finalproject.Utilities.showToast
@@ -46,41 +45,58 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
         }
 
         binding.stopReplayButton.setOnClickListener {
-            if (packetReplayStatus == PacketReplayStatus.Canceled ||
-                packetReplayStatus == PacketReplayStatus.Stopped
-            ) {
-                showToast(this, "Replay cancellation in progress or never started")
-            } else {
-                packetReplayStatus = PacketReplayStatus.Canceled
-            }
+            handleStopReplay()
         }
 
         binding.sendReplayButton.setOnClickListener {
-            if (packetReplayStatus == PacketReplayStatus.Started) {
-                showToast(this, "Replay send already started")
-            } else {
-                if (!ControlActivity.bluetoothService.isConnected) {
-                    showToast(this, "Bluetooth not connected, please connect first")
-                } else {
-                    if (selectedPacketIndexIsValid()) {
-                        sendPacketReplay()
-                    } else {
-                        showToast(this, "No Replay selected, please select one first")
-                    }
-                }
-            }
+            handleSendReplay()
         }
 
         binding.deleteReplayButton.setOnClickListener {
-            if (packetReplayStatus == PacketReplayStatus.Started) {
-                showToast(this, "Replay not stopped, please stop first")
+            handleDeleteReplay()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadSavedReplays()
+    }
+
+    private fun handleSendReplay() {
+        if (packetReplayStatus == PacketReplayStatus.Started) {
+            showToast(this, "Replay send already started")
+        } else {
+            if (!ControlActivity.bluetoothService.isConnected) {
+                showToast(this, "Bluetooth not connected, please connect first")
             } else {
-                if (packetReplayList.isEmpty()) {
-                    showToast(this, "No Replays to delete")
+                if (selectedPacketIndexIsValid()) {
+                    sendPacketReplay()
                 } else {
-                    if (selectedPacketIndexIsValid()) {
-                        showDeleteReplayDialog()
-                    }
+                    showToast(this, "No Replay selected, please select one first")
+                }
+            }
+        }
+    }
+
+    private fun handleStopReplay() {
+        if (packetReplayStatus == PacketReplayStatus.Canceled ||
+            packetReplayStatus == PacketReplayStatus.Stopped
+        ) {
+            showToast(this, "Replay cancellation in progress or never started")
+        } else {
+            packetReplayStatus = PacketReplayStatus.Canceled
+        }
+    }
+
+    private fun handleDeleteReplay() {
+        if (packetReplayStatus == PacketReplayStatus.Started) {
+            showToast(this, "Replay not stopped, please stop first")
+        } else {
+            if (packetReplayList.isEmpty()) {
+                showToast(this, "No Replays to delete")
+            } else {
+                if (selectedPacketIndexIsValid()) {
+                    showDeleteReplayDialog()
                 }
             }
         }
@@ -120,11 +136,6 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
                 setReplaySendState(false)
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        loadSavedReplays()
     }
 
     private fun showDeleteReplayDialog() {
