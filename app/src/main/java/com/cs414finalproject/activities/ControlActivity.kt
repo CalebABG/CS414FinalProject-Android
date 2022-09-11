@@ -298,10 +298,14 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun connectDevice() {
-        val device = getSystemBluetoothAdapter(this)!!.getRemoteDevice(Constants.BLUETOOTH_MAC)
+        val device = getSystemBluetoothAdapter(this)!!
+        if (!device.isEnabled) {
+            showToast(this, "Please enable Bluetooth first")
+            return
+        }
 
         bluetoothService.start()
-        bluetoothService.connect(device, true)
+        bluetoothService.connect(device.getRemoteDevice(Constants.BLUETOOTH_MAC), true)
     }
 
     private fun toggleParentalOverride() {
