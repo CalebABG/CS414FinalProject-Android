@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
                     if (canShowRequestPermissionsRationale()) {
                         showRequestPermissionsDialog()
                     } else {
+                        // Todo: Can make this more intuitive? Snackbar to take to settings?
                         showToast(this, "Please go to Settings and enable permissions")
                     }
                 }
@@ -99,10 +100,6 @@ class MainActivity : AppCompatActivity() {
             permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            Manifest.permission.ACCESS_BACKGROUND_LOCATION
-        }
-
         return permissions.toTypedArray()
     }
 
@@ -117,7 +114,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun neededPermissionsGranted(): Boolean {
         return permissionsMap[Manifest.permission.BLUETOOTH] == PackageManager.PERMISSION_GRANTED &&
-                permissionsMap[Manifest.permission.ACCESS_FINE_LOCATION] == PackageManager.PERMISSION_GRANTED
+                permissionsMap[Manifest.permission.ACCESS_FINE_LOCATION] == PackageManager.PERMISSION_GRANTED &&
+                (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && permissionsMap[Manifest.permission.BLUETOOTH_CONNECT] == PackageManager.PERMISSION_GRANTED)
     }
 
     private fun showRequestPermissionsDialog() {
