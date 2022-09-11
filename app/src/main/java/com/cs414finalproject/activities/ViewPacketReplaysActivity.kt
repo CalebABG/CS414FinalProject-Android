@@ -117,8 +117,7 @@ class ViewPacketReplaysActivity : AppCompatActivity() {
     private suspend fun handleSendPacketReplayCoroutine() {
         withContext(defaultDispatcher) {
             try {
-                val replayPackets: List<String> =
-                    getReplayBook().read(packetReplayList[selectedPacketReplayIndex])!!
+                val replayPackets: List<String> = getReplayBook().read(packetReplayList[selectedPacketReplayIndex])!!
 
                 for (index in replayPackets.indices) {
                     ensureActive()
