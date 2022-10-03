@@ -8,6 +8,4 @@ This is the potatoes of the project, the meat of the project can be found here: 
 
 If you'd like a detailed breakdown of the project, the challenges, and the solutions, checkout the project report: [Final Project Report](https://github.com/CalebABG/CS414FinalProject-Arduino/blob/main/writeups/project-breakdown.md)
 
-If you'd like to see a side-by-side demo of the app and bot together, checkout the demo on Youtube (coming soon!): [Final Project Demo](#)
-
 Thanks for checking out the repo, happy coding!
